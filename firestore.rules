@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function notBlockedBetween(firstUserId, secondUserId) {
+      return !exists(/databases/$(database)/documents/users/$(firstUserId)/blockedUsers/$(secondUserId))
+        && !exists(/databases/$(database)/documents/users/$(secondUserId)/blockedUsers/$(firstUserId));
+    }
+
+    function threadParticipants(threadId) {
+      return get(/databases/$(database)/documents/chatThreads/$(threadId)).data.participants;
+    }
+
+    function canAccessThread(threadId) {
+      let participants = threadParticipants(threadId);
+      let otherUserId = participants[0] == request.auth.uid ? participants[1] : participants[0];
+      return signedIn()
+        && participants is list
+        && participants.size() == 2
+        && participants.hasAny([request.auth.uid])
+        && notBlockedBetween(request.auth.uid, otherUserId);
+    }
+
+    match /users/{userId} {
+      // Signed-in members can discover public mentor/community profiles.
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.isVerified == request.auth.token.email_verified;
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'email', 'firstName', 'lastName', 'university',
+          'department', 'designation', 'educationLevel', 'skills', 'bio', 'avatarUrl',
+          'address1', 'address2', 'city', 'state', 'country', 'postCode', 'phone', 'mobile'
+        ]);
+      allow delete: if false;
+
+      match /pushTokens/{tokenId} {
+        allow read, write: if signedIn() && request.auth.uid == userId;
+      }
+
+      match /blockedUsers/{targetUserId} {
+        allow read: if signedIn() && request.auth.uid == userId;
+        allow create, update: if signedIn()
+          && request.auth.uid == userId
+          && targetUserId != userId
+          && request.resource.data.targetUserId is string
+          && request.resource.data.targetUserId != userId;
+        allow delete: if signedIn() && request.auth.uid == userId;
+      }
+    }
+
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.targetUserId is string
+        && request.resource.data.targetUserId != request.auth.uid
+        && request.resource.data.reason is string
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if false;
+    }
+
+    match /chatThreads/{threadId} {
+      allow read: if signedIn() && resource.data.participants.hasAny([request.auth.uid]);
+      allow create: if signedIn()
+        && request.resource.data.participants is list
+        && request.resource.data.participants.size() == 2
+        && request.resource.data.participants.hasAny([request.auth.uid])
+        && notBlockedBetween(request.resource.data.participants[0], request.resource.data.participants[1]);
+      allow update: if signedIn()
+        && resource.data.participants.hasAny([request.auth.uid])
+        && request.resource.data.participants == resource.data.participants
+        && notBlockedBetween(resource.data.participants[0], resource.data.participants[1]);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if canAccessThread(threadId);
+        allow create: if canAccessThread(threadId)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.threadId == threadId
+          && request.resource.data.text is string;
+        allow update: if canAccessThread(threadId)
+          && resource.data.senderId != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead'])
+          && request.resource.data.isRead == true;
+        allow delete: if false;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead'])
+        && request.resource.data.isRead == true;
+      allow create, delete: if false;
+    }
+  }
+}

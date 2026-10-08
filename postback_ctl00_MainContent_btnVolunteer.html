@@ -1,0 +1,495 @@
+
+<meta name="viewport" content="width=device-width" />
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1"><meta charset="utf-8" /><meta name="keywords" /><meta name="description" /><meta name="author" content="Help to you" /><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" /><title>
+	Help to You
+</title><link href="Styles/Site.css" rel="stylesheet" type="text/css" /><link rel="shortcut icon" type="image/png" href="images/favico.png" /><link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" /><link href="css/bootstrap.min.css" rel="stylesheet" /><link href="css/font-awesome.min.css" rel="stylesheet" />
+    <!-- Lightbox -->
+    <link href="css/ekko-lightbox.css" rel="stylesheet" /><link href="css/dark.css" rel="stylesheet" />
+    <!-- Calendar -->
+    <link href="css/zabuto_calendar.min.css" rel="stylesheet" />
+    <!-- Template -->
+    <link href="css/style.css" rel="stylesheet" />
+    <!-- Custom Color -->
+    <link href="css/color.css" rel="stylesheet" />
+    <!-- Custom Box -->
+    <link href="css/box.css" rel="stylesheet" />
+
+     <script language="javascript" type="text/javascript">
+        function ShowErrorMessage(message) {
+            document.getElementById("divMessage").innerHTML = message;
+            document.getElementById("divMessage").className = "dnnFormMessage dnnFormValidationSummary";
+            document.getElementById("divMessage").style.display = "";
+            // $("#divMessage").delay(5000).fadeOut();
+        }
+        function ShowSuccessMessage(message) {
+            document.getElementById("divMessage").innerHTML = message;
+            document.getElementById("divMessage").className = "dnnFormMessage dnnFormSuccess";
+            document.getElementById("divMessage").style.display = "";
+        }
+
+        function ShowWarningMessage(message) {
+            document.getElementById("divMessage").innerHTML = message;
+            document.getElementById("divMessage").className = "dnnFormMessage dnnFormWarning";
+            document.getElementById("divMessage").style.display = "";
+            $("#divMessage").delay(5000).fadeOut();
+        }
+        function isNumberKey(eventObj) {
+
+            var keycode;
+
+            if (eventObj.keyCode) //For IE
+                keycode = eventObj.keyCode;
+            else if (eventObj.Which)
+                keycode = eventObj.Which;  // For FireFox
+            else
+                keycode = eventObj.charCode; // Other Browser
+
+            if (keycode != 8) //if the key is the backspace key
+            {
+                if (keycode < 48 || keycode > 57) //if not a number
+                    return false; // disable key press
+                else
+                    return true; // enable key press
+            }
+        }
+    
+    </script>
+    
+    </head>
+<body>
+    <form method="post" action="./UserRegistration.aspx?UserType=Volunteer" onsubmit="javascript:return WebForm_OnSubmit();" id="Form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTUzNjQ4OTkxOQ9kFgJmD2QWAgIDD2QWBgIBDxYCHgVzdHlsZQUNZGlzcGxheTpub25lO2QCAw8PZBYCHwAFDWRpc3BsYXk6bm9uZTtkAgkPFgIfAAUNZGlzcGxheTpub25lO2QYAQUeX19Db250cm9sc1JlcXVpcmVQb3N0QmFja0tleV9fFgEFG2N0bDAwJE1haW5Db250ZW50JGNocmVxdWVzdAqPAyGUdz3zwW8Dq0NA7GT31mVthKhdXv8O/+/pSVHM" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['Form1'];
+if (!theForm) {
+    theForm = document.Form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/WebResource.axd?d=a_jJQfqB5YRIKXM1F93sr1q1HUmVU4CW_qXQyzGCRwfSiRjcSBeDpS1DWVaVbnVpSgbUuKaN-o_jePpjp6rjDdz7gK5sD_DNy_1bMFe4pQ01&amp;t=639190592600000000" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+ShowErrorMessage('A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: Named Pipes Provider, error: 40 - Could not open a connection to SQL Server)');//]]>
+</script>
+
+<script src="/ScriptResource.axd?d=DXsBrfpBy2HrgaRGSF8ElCp8yD13E5m8lOvnxUWUIouBWLimQd0QJ9B-pcRk2sXLkXrpBVz0p0SZqwd7NQsrNN75WChnsYSS0i3SaMpeo0t8za14ezoUec2J1BERbtY7HRdCq1NQJZXF6DoN6CGW6Hmvt-Qmwawr7lgHYDSgXdE1&amp;t=ffffffff9fe38677" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=oIYyTaMqcutnyG0QxaUnCnA1zsnHeWTpm2bn68nxRFf7rzkxBs-LfUw63cSVDhjMr6BiezrpM6QZvWOj5SrTVZz9SSfYzZNdHBQOCwMbBLAl5DM8LaffDTeMIy-5a5fS0-BedTRAMBrZ7hqttFg25w2&amp;t=f2cd5c5" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/ScriptResource.axd?d=EZoTUOhQNs_BLHJ133bLY6PoHeFgQBO6PKasyRGIIIcVD-bVHGwFkpVcsSVwu6JsMGMZQY3cMdb92SE4Tvg93XvslrmR0tz1asqwSFaxgr19mhJElb0jX_XSYe9PqsjZ16x718CAQxWPhZ2F7U8Mug2&amp;t=f2cd5c5" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+function WebForm_OnSubmit() {
+if (typeof(ValidatorOnSubmit) == "function" && ValidatorOnSubmit() == false) return false;
+return true;
+}
+//]]>
+</script>
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="48C04AD8" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdABUZ63BE1zjkfPRn+FYEe3N1FTXKhFz+VkVkWhWG6dBY4Bt43s1tnug7zoq6GqCUhhxRqeQVHSsaa3GRyFutWVue/greCUDOxaHfAhJ3BbaApU8LGUlDExV4l4LxpZf9PajLSPpf/7W+p+7EZXWiI06yTRZyJqtrSfBt7nEcn0LnetMWoYg2cUcoeUNghbg9X6V+r61JHNw3TUZax8VUmULh4GBYCf7WHJwS6lt12Z/dt4MGbHPd18vevh05NOSFCmoUwHP4yAiidnVK89LfJDrwA5zQyV4JTE/5+8RCdeMzbeSE8K5YKnY+6128j1FZ5ztSu/lpgES33hyQpzPH3XtH+jTrnl85IRUkZoaCdtSvYsm4Dg4her8nMjNi/Z4apy3SYyy0JNb+Kyi6t8eGIQ6ZfpXmjvpNV8AN3k1cBFT/iEF/fknAxgyDOO86oUAo7OXroXFEHjag6SfsWkA78RYPY9OxEYkBgi3M6OkmraSmNQ==" />
+</div>
+    <div class="main-wrap">
+        <header class="top-bar">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4 col-xs-6">
+                            <div class="languages nav-root">
+                                <nav class="pt-nav">
+                                    <ul>
+                                        <li><a href="mailto:info@helptoyou.org"><i class="fa fa-envelope-o"></i> info@helptoyou.org</a></li>
+                                    </ul> <ul class="list-inline">
+                                        <li><a href="http://www.facebook.com/sharer.php?u=http://helptoyou.org/home.aspx" title="share on facebook"><i class="fa fa-facebook"></i></a></li>
+                                        <li><a href="http://twitter.com/share?url=http://helptoyou.org/home.aspx" title="share on twitter"><i class="fa fa-twitter"></i></a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="col-md-8 col-xs-12 clearfix">
+                            <div class="add-info">
+                                <nav>
+                                    <ul id="lnkMain" class="list-inline" style="display:none;">
+                                      
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+        <header class="main-header">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="logo">
+                                <a href="#">
+                                    <img src="images/logo.png" style="width: 145px;" title="help to you" alt="help to you" />
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <div class="main-nav nav-root">
+                                <div class="pt-nav-trigger">
+                                    <button><i class="fa fa-bars"></i>Navigation
+                                    </button>
+                                </div>
+                                <nav class="pt-nav clearfix">
+                                    <ul class="clearfix">
+                                        <li>  <a><span id="lblUserName" style="display:none;"></span></a></li>
+                                     
+                                        <li>  <a id="lnkreset" href="javascript:__doPostBack(&#39;ctl00$lnkreset&#39;,&#39;&#39;)">Change Password</a>  </li>
+                                    
+                                        <li>  <a id="lnkEditProfile" href="javascript:__doPostBack(&#39;ctl00$lnkEditProfile&#39;,&#39;&#39;)">Edit Profile</a></li>
+                                     <li id="lnkOut" class="button" style="display:none;"><a id="lnkLogOut" href="javascript:__doPostBack(&#39;ctl00$lnkLogOut&#39;,&#39;&#39;)">Log Out</a></li>  
+                                    </ul>
+                                </nav> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+       
+        
+    <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ctl00$MainContent$ScriptManager1', 'Form1', ['tctl00$MainContent$upPropertyManager','MainContent_upPropertyManager'], [], [], 90, 'ctl00');
+//]]>
+</script>
+
+    <div id="MainContent_upPropertyManager">
+	
+            <section class="breadcrumbs">
+                <div class="breadcrumbs-wrapper">
+                    <div class="container">
+                        <div class="row">
+                        
+                         <input type="hidden" name="ctl00$MainContent$hifId" id="MainContent_hifId" />
+                            <div class="col-md-6 col-xs-6">
+                                <h4></h4>
+                            </div>
+                            <div class="col-md-6 col-xs-6">
+                                <ol class="breadcrumb">
+                                    <li><a id="MainContent_lnkHome" href="javascript:__doPostBack(&#39;ctl00$MainContent$lnkHome&#39;,&#39;&#39;)">Home</a></li>
+                                    <li id="MainContent_lnkHeader" class="active">User Registration</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="container"  >
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="box-wrapper" > 
+                                <div class="box" >
+                                    <div class="donate-form">
+                                        <div class="content comments">
+                                            <h4> <span id="MainContent_lblHeading"></span>
+                                            </h4>
+                                        </div>
+                                        <hr class="inline-hr">
+                                        <div id="divMessage" class="dnnFormMessage dnnFormWarning" style="display: none;">
+            </div><a id="MainContent_lnkDash" href="javascript:__doPostBack(&#39;ctl00$MainContent$lnkDash&#39;,&#39;&#39;)">Home</a>
+                                        <div id="MainContent_tblUser" class="content">
+                                            <form role="form">
+                                             <div class="widget-box"  >
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6" align="left">  <strong>User Type :</strong></div>   <div class="col-md-6" align=left>   <select name="ctl00$MainContent$ddlUserType" id="MainContent_ddlUserType" class="form-control" style="width:180px;">
+
+	</select></div></div></div>
+                                           
+                                            <div id="MainContent_trCheckBox" class="widget-box">
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6"> <strong> Request for regional lead role :</strong></div>   <div class="col-md-6">  <input id="MainContent_chrequest" type="checkbox" name="ctl00$MainContent$chrequest" /></div></div></div>
+                                            
+                                             <div class="widget-box">
+                                                    <div class="form-group">
+                                                     <input name="ctl00$MainContent$txtEmail" type="text" maxlength="100" id="MainContent_txtEmail" class="form-control" placeholder="Email Address" />
+                                                <span id="MainContent_EmailRequired" class="failureNotification" style="display:none;">*</span>
+                                                <span id="MainContent_remail" style="color:Red;display:none;">Invalid Email</span>
+                                                       
+                                                    </div>
+                                                </div>
+                                                <div class="widget-box">
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6">
+                                                         <input name="ctl00$MainContent$txtFirstName" type="text" maxlength="150" id="MainContent_txtFirstName" class="form-control" placeholder="First name" />
+                                                <span id="MainContent_FirstNameRequired" class="failureNotification" style="display:none;">*</span>
+                                                           
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                          <input name="ctl00$MainContent$txtLastName" type="text" maxlength="150" id="MainContent_txtLastName" class="form-control" placeholder="Last name" />
+                                                <span id="MainContent_LastNameRequired" class="failureNotification" style="display:none;">*</span>
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="widget-box">
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6">
+                                                              <input name="ctl00$MainContent$txtAddress1" type="text" maxlength="150" id="MainContent_txtAddress1" class="form-control" placeholder="Address Line1" />
+                                                <span id="MainContent_Address1Required" class="failureNotification" style="display:none;">*</span>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <input name="ctl00$MainContent$txtAddress2" type="text" maxlength="150" id="MainContent_txtAddress2" class="form-control" placeholder="Address Line2" />
+                                                        </div>
+                                                    </div>
+                                                </div>  
+                                                
+                                                 <div class="widget-box">
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6">
+                                                            <input name="ctl00$MainContent$txtCity" type="text" maxlength="150" id="MainContent_txtCity" class="form-control" placeholder="City" />
+                                                <span id="MainContent_RequiredFieldValidator3" class="failureNotification" style="display:none;">*</span>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                              <input name="ctl00$MainContent$txtPostCode" type="text" maxlength="20" id="MainContent_txtPostCode" class="form-control" placeholder="Postcode" onkeypress="return isNumberKey(event);" />
+                                                            <span id="MainContent_PostCodeRequired" class="failureNotification" style="display:none;">*</span>
+                                                        </div>
+                                                    </div>
+                                                </div>  
+                                                 <div class="widget-box">
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6">
+                                                            <input name="ctl00$MainContent$txtState" type="text" maxlength="150" id="MainContent_txtState" class="form-control" placeholder="State" />
+                                                <span id="MainContent_RequiredFieldValidator2" class="failureNotification" style="display:none;">*</span>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <input name="ctl00$MainContent$txtCountry" type="text" maxlength="150" id="MainContent_txtCountry" class="form-control" placeholder="Country" />
+                                                <span id="MainContent_RequiredFieldValidator1" class="failureNotification" style="visibility:hidden;">*</span>
+                                                        </div>
+                                                    </div>
+                                                </div>  
+                                                 <div class="widget-box">
+                                                    <div class="form-group row">
+                                                        <div class="col-md-6">
+                                                            <input name="ctl00$MainContent$txtPhone" type="text" maxlength="20" id="MainContent_txtPhone" class="form-control" placeholder="Phone" onkeypress="return isNumberKey(event);" />
+                                               
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                               <input name="ctl00$MainContent$txtMobile" type="text" maxlength="20" id="MainContent_txtMobile" class="form-control" placeholder="Mobile" onkeypress="return isNumberKey(event);" />
+                                                
+                                                        </div>
+                                                    </div>
+                                                </div>  
+                                                 <div class="form-group" align=center >
+                                                  <input type="submit" name="ctl00$MainContent$btnSave" value="Save" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$MainContent$btnSave&quot;, &quot;&quot;, true, &quot;Group1&quot;, &quot;&quot;, false, false))" id="MainContent_btnSave" class="button-normal half blue" style="width:100px;" />
+                                                <input type="submit" name="ctl00$MainContent$btnCancel" value="Cancel" id="MainContent_btnCancel" class="button-normal half blue" style="width:100px;" />
+                                                    
+                                                </div>  </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="col-md-6">
+                            <div class="box-wrapper">
+                                <div class="box">
+                                    <div class="padding5">
+                                        <h3><a href="#">Yes we can help them to have bright future</a></h3>
+                                    </div>
+                                    <div class="content single txt-ju">
+                                        <p>
+Helptoyou is a platform where people come together to help under-privileged people reach their full potential.
+<blockquote>
+                                            <p class="txt-ju">Those who are happiest are those who do the most for others </p>
+                                        </blockquote>Booker T. Washington
+
+                                        <hr>
+                                        <p> If you are someone who wants to make a difference in a life, you can do that by contributing your time for our various initiatives.Helptoyou is an organization that is completely run by sponsors and volunteers. Volunteers are the pillars of our effort to change the lives of many people; they play a key role in every part of our initiative.It could not be successful without the continuing support and contribution of volunteers. 
+                                    </div>
+                                </div>
+                            </div>
+                        </div> </div></div>
+            </section>
+        
+</div>
+
+        <section class="blue-background">
+                <div class="container">
+                   
+                </div>
+            </section>
+        <footer class="dark-background">
+                <div class="container">
+                    <div class="row"> 
+                   <div class="col-md-6"></div>     <div class="col-md-6 col-xs-6 text-right" align="right">
+                            <p>&copy; 2015 Help To You - All rights reserved</p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+    </div>
+    <!-- main wrap -->
+    <!-- jQuery (necessary for Bootstrap 's JavaScript plugins) -->
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/jquery.nicescroll.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Include all template custom js -->
+    <script src="js/jquery.downCount.js"></script>
+    <script src="js/bootstrap-slider.js"></script>
+    <script src="js/zabuto_calendar.min.js"></script>
+    <script src="js/ekko-lightbox.js"></script>
+    <!--<script src="SWITCHER/js/switcher.js"></script>-->
+    <script src="js/custom.js"></script>
+    
+<script type="text/javascript">
+//<![CDATA[
+var Page_Validators =  new Array(document.getElementById("MainContent_EmailRequired"), document.getElementById("MainContent_remail"), document.getElementById("MainContent_FirstNameRequired"), document.getElementById("MainContent_LastNameRequired"), document.getElementById("MainContent_Address1Required"), document.getElementById("MainContent_RequiredFieldValidator3"), document.getElementById("MainContent_PostCodeRequired"), document.getElementById("MainContent_RequiredFieldValidator2"), document.getElementById("MainContent_RequiredFieldValidator1"));
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+var MainContent_EmailRequired = document.all ? document.all["MainContent_EmailRequired"] : document.getElementById("MainContent_EmailRequired");
+MainContent_EmailRequired.controltovalidate = "MainContent_txtEmail";
+MainContent_EmailRequired.errormessage = "*";
+MainContent_EmailRequired.display = "Dynamic";
+MainContent_EmailRequired.validationGroup = "Group1";
+MainContent_EmailRequired.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_EmailRequired.initialvalue = "";
+var MainContent_remail = document.all ? document.all["MainContent_remail"] : document.getElementById("MainContent_remail");
+MainContent_remail.controltovalidate = "MainContent_txtEmail";
+MainContent_remail.focusOnError = "t";
+MainContent_remail.errormessage = "Invalid Email";
+MainContent_remail.display = "Dynamic";
+MainContent_remail.validationGroup = "Group1";
+MainContent_remail.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+MainContent_remail.validationexpression = "\\w+([-+.\']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+var MainContent_FirstNameRequired = document.all ? document.all["MainContent_FirstNameRequired"] : document.getElementById("MainContent_FirstNameRequired");
+MainContent_FirstNameRequired.controltovalidate = "MainContent_txtFirstName";
+MainContent_FirstNameRequired.errormessage = "*";
+MainContent_FirstNameRequired.display = "Dynamic";
+MainContent_FirstNameRequired.validationGroup = "Group1";
+MainContent_FirstNameRequired.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_FirstNameRequired.initialvalue = "";
+var MainContent_LastNameRequired = document.all ? document.all["MainContent_LastNameRequired"] : document.getElementById("MainContent_LastNameRequired");
+MainContent_LastNameRequired.controltovalidate = "MainContent_txtLastName";
+MainContent_LastNameRequired.errormessage = "*";
+MainContent_LastNameRequired.display = "Dynamic";
+MainContent_LastNameRequired.validationGroup = "Group1";
+MainContent_LastNameRequired.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_LastNameRequired.initialvalue = "";
+var MainContent_Address1Required = document.all ? document.all["MainContent_Address1Required"] : document.getElementById("MainContent_Address1Required");
+MainContent_Address1Required.controltovalidate = "MainContent_txtAddress1";
+MainContent_Address1Required.errormessage = "*";
+MainContent_Address1Required.display = "Dynamic";
+MainContent_Address1Required.validationGroup = "Group1";
+MainContent_Address1Required.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_Address1Required.initialvalue = "";
+var MainContent_RequiredFieldValidator3 = document.all ? document.all["MainContent_RequiredFieldValidator3"] : document.getElementById("MainContent_RequiredFieldValidator3");
+MainContent_RequiredFieldValidator3.controltovalidate = "MainContent_txtCity";
+MainContent_RequiredFieldValidator3.errormessage = "*";
+MainContent_RequiredFieldValidator3.display = "Dynamic";
+MainContent_RequiredFieldValidator3.validationGroup = "Group1";
+MainContent_RequiredFieldValidator3.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_RequiredFieldValidator3.initialvalue = "";
+var MainContent_PostCodeRequired = document.all ? document.all["MainContent_PostCodeRequired"] : document.getElementById("MainContent_PostCodeRequired");
+MainContent_PostCodeRequired.controltovalidate = "MainContent_txtPostCode";
+MainContent_PostCodeRequired.errormessage = "*";
+MainContent_PostCodeRequired.display = "Dynamic";
+MainContent_PostCodeRequired.validationGroup = "Group1";
+MainContent_PostCodeRequired.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_PostCodeRequired.initialvalue = "";
+var MainContent_RequiredFieldValidator2 = document.all ? document.all["MainContent_RequiredFieldValidator2"] : document.getElementById("MainContent_RequiredFieldValidator2");
+MainContent_RequiredFieldValidator2.controltovalidate = "MainContent_txtState";
+MainContent_RequiredFieldValidator2.errormessage = "*";
+MainContent_RequiredFieldValidator2.display = "Dynamic";
+MainContent_RequiredFieldValidator2.validationGroup = "Group1";
+MainContent_RequiredFieldValidator2.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_RequiredFieldValidator2.initialvalue = "";
+var MainContent_RequiredFieldValidator1 = document.all ? document.all["MainContent_RequiredFieldValidator1"] : document.getElementById("MainContent_RequiredFieldValidator1");
+MainContent_RequiredFieldValidator1.controltovalidate = "MainContent_txtCountry";
+MainContent_RequiredFieldValidator1.errormessage = "*";
+MainContent_RequiredFieldValidator1.validationGroup = "Group1";
+MainContent_RequiredFieldValidator1.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+MainContent_RequiredFieldValidator1.initialvalue = "";
+//]]>
+</script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+var Page_ValidationActive = false;
+if (typeof(ValidatorOnLoad) == "function") {
+    ValidatorOnLoad();
+}
+
+function ValidatorOnSubmit() {
+    if (Page_ValidationActive) {
+        return ValidatorCommonOnSubmit();
+    }
+    else {
+        return true;
+    }
+}
+        
+document.getElementById('MainContent_EmailRequired').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_EmailRequired'));
+}
+
+document.getElementById('MainContent_remail').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_remail'));
+}
+
+document.getElementById('MainContent_FirstNameRequired').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_FirstNameRequired'));
+}
+
+document.getElementById('MainContent_LastNameRequired').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_LastNameRequired'));
+}
+
+document.getElementById('MainContent_Address1Required').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_Address1Required'));
+}
+
+document.getElementById('MainContent_RequiredFieldValidator3').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_RequiredFieldValidator3'));
+}
+
+document.getElementById('MainContent_PostCodeRequired').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_PostCodeRequired'));
+}
+
+document.getElementById('MainContent_RequiredFieldValidator2').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_RequiredFieldValidator2'));
+}
+
+document.getElementById('MainContent_RequiredFieldValidator1').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('MainContent_RequiredFieldValidator1'));
+}
+//]]>
+</script>
+</form>
+</body>
+</html>
