@@ -225,7 +225,7 @@ export function HelpDetailScreen() {
             Responses & Guidance ({request.responses?.length || 0})
           </Text>
           <Text style={styles.threadSubtitle}>
-            Verified advice from professors, alumni, and campus mentors
+            Community responses from students, alumni, and educators
           </Text>
         </View>
 

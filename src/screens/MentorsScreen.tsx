@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -183,9 +183,6 @@ export function MentorsScreen() {
                     : 'primary'
                 }
               />
-              <Text style={styles.ratingText}>
-                ★ {item.rating || 5.0} ({item.helpedCount || 0} helped)
-              </Text>
             </View>
           </View>
           {user && user.id !== item.id && (
@@ -305,9 +302,9 @@ export function MentorsScreen() {
       {/* Header */}
       <View style={styles.topBar}>
         <View>
-          <Text style={styles.pageTitle}>Campus Mentors & Faculty</Text>
+          <Text style={styles.pageTitle}>Members & Mentors</Text>
           <Text style={styles.pageSub}>
-            Find professors, alumni & seniors willing to guide you
+            Mentor profiles are not connected to a shared directory yet.
           </Text>
         </View>
       </View>
@@ -396,9 +393,9 @@ export function MentorsScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="people-outline" size={48} color={colors.slateMuted} />
-            <Text style={styles.emptyTitle}>No mentors matched</Text>
+            <Text style={styles.emptyTitle}>No member profiles available</Text>
             <Text style={styles.emptySubtitle}>
-              Try adjusting your university or role filter.
+              The shared mentor directory will appear when public profiles are connected.
             </Text>
           </View>
         }
@@ -557,11 +554,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginTop: 4,
-  },
-  ratingText: {
-    fontSize: 11,
-    color: '#D97706',
-    fontWeight: '600',
   },
   institutionRow: {
     flexDirection: 'row',

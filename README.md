@@ -1,96 +1,31 @@
-# HelpToYou — Education Community Connect Mobile & Web Application
+﻿# HelpToYou
 
-A modern, high-fidelity React Native (Expo) community platform built for [HelpToYou](http://helptoyou.org/). 
+HelpToYou is an Expo and React Native application for education guidance and community support. It runs on Android, iOS, and the web.
 
-It connects students and aspirants with university professors, alumni mentors, and educational sponsors to seek admission guidance, syllabus support, research opportunities, and scholarships.
+## Current state
 
----
+This repository is a working product foundation, not a production-ready community service.
 
-## 🌟 Key Features
+- Firebase Authentication handles email/password registration, sign-in, and password reset.
+- Firebase Firestore stores authenticated user profiles, chat, reports, blocking, and notification data.
+- Questions, replies, upvotes, mentor connections, and the member directory still use device-local storage or are not connected to a shared service. They are not visible to other users.
+- The academic assistant is unavailable until a real AI service is configured; it does not generate responses.
+- There are no sample accounts or fabricated community posts. Existing installations remove the app's old sample records during database initialization while preserving user-created local records.
+- Contact submission and website-specific applicant, sponsor, volunteer, and profile workflows need a confirmed API contract. The existing website uses ASP.NET Web Forms; the app does not guess REST endpoints.
+- Firestore security changes in `firestore.rules` must be deployed to Firebase before they protect the live project.
 
-1. **Education Community Board (`CommunityFeedScreen`)**:
-   - Real-time question feed with category filtering:
-     - 🎓 University Admissions
-     - 🔬 Research & Thesis
-     - 📚 Syllabus & Exam Preparation
-     - 💰 Scholarships & Financial Assistance
-     - 💼 Career Guidance & Mentorship
-   - Search by university (Anna University, IIT Madras, Stanford, NIT Trichy, etc.), course, or keyword.
-   - Upvoting system and discussion threads.
-   - Interactive "+ Ask For Help" modal.
+Do not present local preview content as a live, shared community or use this build to process real applicant information until the remaining backend and security work is complete.
 
-2. **Help Request & Verified Advice Threads (`HelpDetailScreen`)**:
-   - Detailed inquiry breakdown with urgency badges and tags.
-   - Advice threads with verified status tags (`Verified Professor`, `Alumni Mentor`, `Accepted Solution`).
-   - In-app advice submission form with instant database updates.
-   - "Mark as Resolved" option for authors.
+## Run locally
 
-3. **Campus Mentors Directory (`MentorsScreen`)**:
-   - Discover and connect with university faculty, alumni, and senior students.
-   - Filter by university and academic role.
-   - "Connect / Request Guidance" action with real-time status (`Pending`, `Connected`).
-   - "Ask Direct Question" shortcut.
+1. Install Node.js and npm.
+2. Install dependencies with `npm ci`.
+3. Copy `.env.example` to `.env` and configure the Firebase web API key for the Firebase project in `src/services/firebaseConfig.ts`.
+4. Start the web preview with `npm run web`, or start Expo for a device/simulator with `npm run start:native`.
+5. Run the TypeScript check with `npm run ts:check`.
 
-4. **Multi-Role Registration (`RegisterScreen`)**:
-   - Role-specific profiles:
-     - 👨‍🎓 **Student / Aspirant** (seeking admissions, coursework advice, peer notes)
-     - 🎓 **Professor / Faculty** (curriculum, research, academic counseling)
-     - 💼 **Alumni / Mentor** (industry transitions, tech interview preparation)
-     - 🤝 **Sponsor / Donor** (tuition & educational aid)
-     - 🌟 **Volunteer** (field verification and student aid coordination)
-   - Dynamic profile capture: University, Department, Academic Title / Status, Guidance Skills, Bio, Location.
+Never commit `.env` or credentials. Keep public runtime configuration limited to values intended for client applications.
 
-5. **Authentication & Instant Demo Switcher (`LoginScreen`, `ProfileScreen`)**:
-   - Full credentials authentication (`email` + `password`).
-   - **1-Tap Demo Logins**:
-     - 🎓 **Dr. R. Sundaram** (Senior Professor, Anna University)
-     - 🎓 **Dr. Emily Watson** (Associate Professor, Stanford AI Lab)
-     - 👨‍🎓 **Arun Kumar** (M.Tech Aspirant, Anna University)
-     - 👨‍🎓 **Karthik Raja** (Final Year B.Tech, Anna University)
-     - 💼 **Priya Natarajan** (Software Architect & Alumni, IIT Madras)
-     - 🤝 **Senthil Krishnaswamy** (Co-Founder & Sponsor, HelpToYou)
-   - Instant persona toggle on the Profile tab to test asking and answering from different perspectives.
+## Backend and release work
 
-6. **HelpToYou Mission & Cause Tracker (`AboutUsScreen`)**:
-   - Live cause progress bar: `$8,365` raised of `$14,000` goal for higher education scholarships.
-   - Leadership roster with original website assets (Pranav Kalyan, Senthil Krishnaswamy, Sathya Ramaswamy, Manivannan Arumugam, Kalyana Kumar Mohan).
-   - Foundation contact and donation links.
-
----
-
-## 💾 Local Database & Production Migration
-
-- **Current Local Database (`src/storage/db.ts`)**:
-  - Implements a self-contained persistent repository using `@react-native-async-storage/async-storage`.
-  - Provides complete CRUD operations for:
-    - `users`
-    - `help_requests`
-    - `help_responses`
-    - `institutions`
-    - `connections`
-- **Production Migration Schema (`schema.sql`)**:
-  - Contains PostgreSQL / SQLite compatible DDL tables, foreign keys, constraints, and indexes.
-  - When ready to connect to your live database, execute `schema.sql` on your SQL server.
-
----
-
-## 🚀 Running the Application
-
-### 1. Web Preview (Local Dev Server)
-The Expo dev server is running on **port 8085**:
-```sh
-npm start
-# or
-npx expo start --web --port 8085
-```
-Open **[http://localhost:8085](http://localhost:8085)** in your web browser.
-
-### 2. Mobile (Android & iOS)
-- **Expo Go App**: Scan the QR code printed by `npm run start:native`.
-- **Android Simulator / Device**: `npm run android`
-- **iOS Simulator / Device**: `npm run ios`
-
-### 3. Type Checking
-```sh
-npm run ts:check
-```
+See [APP_PLAN.md](APP_PLAN.md), [API_CONTRACT.md](API_CONTRACT.md), and [TODO.md](TODO.md) for the data model, integration gaps, and release checklist. In particular, the shared question feed, mentor directory, connections, and role verification need production services and rules before release.

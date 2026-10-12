@@ -21,6 +21,8 @@ No dashboard, admin, applicant case workflow, cause directory, donations, notifi
 
 - Expo and React Native with TypeScript; React Navigation native stack and bottom tabs
 - Firebase email/password authentication with React Native AsyncStorage persistence and Firestore profiles keyed by Firebase UID
+- Firestore user documents contain private profile and contact fields; public mentor discovery needs a separate, allowlisted profile collection
+- Questions, responses, upvotes, and connections currently persist only on the device and are labeled as preview functionality
 - Axios client created without a guessed base URL
 - Auth and contact service contracts return an explicit backend-required error
 - Reusable common inputs, buttons, cards, headers, and feedback components
@@ -28,7 +30,7 @@ No dashboard, admin, applicant case workflow, cause directory, donations, notifi
 
 ## Backend integration gate
 
-Firebase Authentication handles app sign-in, registration, password reset, and logout. Website-specific actions still require a mobile API contract or server-side source because the site exposes Web Forms postbacks that depend on ViewState/EventValidation; no JSON endpoint has been verified. Endpoint inventory and required backend information are in `API_CONTRACT.md`.
+Firebase Authentication handles app sign-in, registration, password reset, and logout. The academic assistant has no connected AI service. Community data and mentor discovery need a shared data model and deployed Firestore rules. Website-specific actions still require a mobile API contract or server-side source because the site exposes Web Forms postbacks that depend on ViewState/EventValidation; no JSON endpoint has been verified. Endpoint inventory and required backend information are in `API_CONTRACT.md`.
 
 ## Foundation acceptance
 

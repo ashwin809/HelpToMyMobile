@@ -25,8 +25,9 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Signed-in members can discover public mentor/community profiles.
-      allow read: if signedIn();
+      // This document contains private contact and address fields. Public discovery
+      // must use a separate, explicitly curated profile document.
+      allow read: if signedIn() && request.auth.uid == userId;
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.data.isVerified == request.auth.token.email_verified;

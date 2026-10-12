@@ -1,19 +1,29 @@
-# Remaining work
+﻿# Production readiness work
 
-## Backend/API required
+## Shared community backend
 
-- [ ] Obtain supported mobile API base URL and documentation
-- [ ] Confirm login, session, role/permissions, expiry, and logout behavior
-- [ ] Confirm Sponsor / Volunteer / Applicant registration request and validation contract
-- [ ] Confirm profile read/update and password change contracts
-- [ ] Confirm password recovery behavior and response contract
-- [ ] Confirm contact form delivery endpoint
-- [ ] Confirm source and refresh behavior for the homepage cause progress value
+- [ ] Move questions, answers, upvotes, and status changes from device storage to a shared, authenticated service.
+- [ ] Publish only approved public profile fields to the mentor directory; keep contact details and addresses private.
+- [ ] Move connection requests and decisions to a shared service with authorization for both participants.
+- [ ] Add pagination, duplicate-submit protection, and offline/error states for shared content.
+- [ ] Remove preview-only wording after the shared service is live and verified.
 
-## Audit verification required
+## Identity, safety, and privacy
 
-- [ ] Restore live-site access or provide current source and authenticated non-production accounts
-- [ ] Verify all saved page copies and navigation against the deployed website
-- [ ] Verify validation messages, redirects, error/success states, and role permissions
+- [ ] Define how professional roles are reviewed; email verification alone does not verify academic credentials.
+- [ ] Review and deploy Firestore rules from `firestore.rules` after emulator/rules tests.
+- [ ] Add retention, account deletion, and data export behavior for profile and community data.
+- [ ] Verify reports, blocks, notifications, and chat rules against authenticated test accounts.
 
-The app is currently an architecture foundation with page placeholders. It does not claim functionality parity or production readiness.
+## Organization website workflows
+
+- [ ] Obtain the supported mobile API base URL and API contract.
+- [ ] Confirm applicant, sponsor, volunteer, contact, profile, password change, and password recovery workflows.
+- [ ] Connect those flows only to documented endpoints; do not replay Web Forms postbacks as a substitute.
+- [ ] Confirm any mission or fundraising metrics against an authoritative source before displaying numbers.
+
+## Release
+
+- [ ] Verify the app on current Android, iOS, and web targets.
+- [ ] Complete accessibility, responsive layout, error, loading, and empty-state reviews.
+- [ ] Configure production Firebase, app signing, monitoring, privacy policy, and support contact.

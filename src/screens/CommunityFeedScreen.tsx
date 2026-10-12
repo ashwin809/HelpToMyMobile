@@ -296,6 +296,9 @@ export function CommunityFeedScreen() {
           <Text style={styles.welcomeSubtitle}>
             Connect with students, mentors, and educators who are ready to help.
           </Text>
+          <Text style={styles.previewNote}>
+            Preview mode · Posts are saved on this device
+          </Text>
         </View>
         <View style={styles.welcomeMark}>
           <Ionicons name="school" size={25} color="#FFFFFF" />
@@ -544,6 +547,13 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginTop: 6,
     maxWidth: 280,
+  },
+  previewNote: {
+    color: '#B5D5C8',
+    fontSize: 10,
+    lineHeight: 14,
+    marginTop: 9,
+    fontWeight: '600',
   },
   welcomeMark: {
     width: 48,

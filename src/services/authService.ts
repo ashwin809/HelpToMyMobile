@@ -100,8 +100,6 @@ export const authService = {
       phone: payload.phone || payload.mobile,
       avatarUrl: `https://api.dicebear.com/7.x/initials/png?seed=${encodeURIComponent(displayName)}&backgroundColor=00BD62`,
       isVerified: credential.user.emailVerified,
-      helpedCount: 0,
-      rating: 5,
       createdAt: new Date().toISOString(),
     };
     try {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -137,7 +137,7 @@ export function ProfileScreen() {
             <Ionicons name="location" size={15} color={colors.primary} />
             <Text style={{ fontSize: 13, color: colors.slateDark, fontWeight: '500' }}>
               {[user.city, user.state, user.country].filter(Boolean).join(', ')}
-              {user.postCode ? ` • PIN: ${user.postCode}` : ''}
+              {user.postCode ? ` â€¢ PIN: ${user.postCode}` : ''}
             </Text>
           </View>
         ) : null}
@@ -164,7 +164,7 @@ export function ProfileScreen() {
           </View>
         )}
 
-        {/* Stats Grid */}
+        {/* Contribution snapshot */}
         <View style={styles.statsGrid}>
           <View style={styles.statCol}>
             <Text style={styles.statNum}>{myRequests.length}</Text>
@@ -172,13 +172,8 @@ export function ProfileScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCol}>
-            <Text style={styles.statNum}>{user.helpedCount || 0}</Text>
-            <Text style={styles.statLabel}>Times Helped</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCol}>
-            <Text style={styles.statNum}>{user.rating || 5.0} ★</Text>
-            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={styles.statNum}>{user.skills?.length || 0}</Text>
+            <Text style={styles.statLabel}>Guidance Topics</Text>
           </View>
         </View>
 
@@ -238,7 +233,7 @@ export function ProfileScreen() {
                 />
               </View>
               <Text style={styles.myReqMeta}>
-                {req.category} • {req.university} • {req.responseCount || 0} Responses
+                {req.category} â€¢ {req.university} â€¢ {req.responseCount || 0} Responses
               </Text>
             </TouchableOpacity>
           ))

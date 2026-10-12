@@ -21,8 +21,6 @@ export interface User {
   bio?: string;
   avatarUrl?: string;
   isVerified?: boolean;
-  helpedCount?: number;
-  rating?: number;
   address1?: string;
   address2?: string;
   city?: string;

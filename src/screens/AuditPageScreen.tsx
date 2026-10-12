@@ -45,7 +45,7 @@ export function AuditPageScreen({ page, role }: Props) {
     <Text style={styles.brand}>HelpToYou</Text><Text style={styles.heading}>{title[page]}</Text>
     {page === 'Home' && <>
       <Text style={styles.body}>Connecting those who help and those who need help.</Text>
-      <View style={styles.notice}><Text style={styles.noticeTitle}>How to help anyone else</Text><Text style={styles.body}>Saved site snapshot: 8,365 raised of 14,000. Live value source is unverified.</Text></View>
+      <View style={styles.notice}><Text style={styles.noticeTitle}>Education support</Text><Text style={styles.body}>Current fundraising totals are not displayed because a verified, up-to-date source is not connected.</Text></View>
       {!isAuthenticated && action('Login', () => navigation.navigate('Login'))}
       {(['Sponsor', 'Volunteer', 'Applicant'] as const).map((r) => action(`Register — ${r}`, () => navigation.navigate('Register', { role: r })))}
       {action('Forgot password', () => navigation.navigate('ForgotPassword'))}
