@@ -45,10 +45,6 @@ const LEADERS = [
 ];
 
 export function AboutUsScreen() {
-  const currentRaised = 8365;
-  const targetGoal = 14000;
-  const percentage = Math.round((currentRaised / targetGoal) * 100);
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Hero Banner */}
@@ -71,36 +67,22 @@ export function AboutUsScreen() {
         </View>
       </View>
 
-      {/* Cause Progress Tracker */}
+      {/* Mission */}
       <View style={styles.causeCard}>
         <View style={styles.causeHeader}>
-          <Ionicons name="sparkles" size={18} color={colors.primary} />
-          <Text style={styles.causeLabel}>FEATURED URGENT CAUSE</Text>
+          <Ionicons name="heart" size={18} color={colors.primary} />
+          <Text style={styles.causeLabel}>OUR MISSION</Text>
         </View>
-        <Text style={styles.causeHeading}>Higher Education & Student Sponsorship</Text>
+        <Text style={styles.causeHeading}>Help more students access education</Text>
         <Text style={styles.causeDesc}>
-          Providing tuition fees, entrance coaching, and mentorship for underprivileged students
-          entering engineering, science, and medical universities.
+          HelpToYou connects students with educational guidance, mentorship, and opportunities.
         </Text>
-
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBarTrack}>
-            <View style={[styles.progressBarFill, { width: `${percentage}%` }]} />
-          </View>
-          <View style={styles.progressMeta}>
-            <Text style={styles.progressRaised}>
-              ${currentRaised.toLocaleString()}{' '}
-              <Text style={styles.progressSub}>raised of ${targetGoal.toLocaleString()} goal</Text>
-            </Text>
-            <Text style={styles.progressPercent}>{percentage}% funded</Text>
-          </View>
-        </View>
 
         <TouchableOpacity
           style={styles.sponsorCta}
-          onPress={() => Linking.openURL('http://helptoyou.org/whatWeDo.aspx')}
+          onPress={() => Linking.openURL('https://helptoyou.org/whatWeDo.aspx')}
         >
-          <Text style={styles.sponsorCtaText}>Support a Student Today</Text>
+          <Text style={styles.sponsorCtaText}>Learn about our work</Text>
           <Ionicons name="open-outline" size={14} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
@@ -168,10 +150,10 @@ export function AboutUsScreen() {
         <Text style={styles.officialTitle}>Official Foundation Information</Text>
         <TouchableOpacity
           style={styles.linkRow}
-          onPress={() => Linking.openURL('http://helptoyou.org/')}
+          onPress={() => Linking.openURL('https://helptoyou.org/')}
         >
           <Ionicons name="globe-outline" size={18} color={colors.primary} />
-          <Text style={styles.linkText}>Website: http://helptoyou.org</Text>
+          <Text style={styles.linkText}>Website: helptoyou.org</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.linkRow}
@@ -267,40 +249,6 @@ const styles = StyleSheet.create({
     color: colors.slateMedium,
     lineHeight: 18,
     marginBottom: 14,
-  },
-  progressContainer: {
-    marginBottom: 14,
-  },
-  progressBarTrack: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#E2E8F0',
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 5,
-  },
-  progressMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressRaised: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.slateDark,
-  },
-  progressSub: {
-    fontWeight: '400',
-    color: colors.slateMedium,
-  },
-  progressPercent: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primaryDark,
   },
   sponsorCta: {
     flexDirection: 'row',

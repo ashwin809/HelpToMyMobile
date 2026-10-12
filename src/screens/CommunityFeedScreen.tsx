@@ -289,23 +289,17 @@ export function CommunityFeedScreen() {
         </View>
       </View>
 
-      {/* Cause Banner */}
-      <View style={styles.causeBanner}>
-        <View style={styles.causeIconWrapper}>
-          <Ionicons name="heart" size={16} color={colors.primary} />
-        </View>
-        <View style={styles.causeTextCol}>
-          <Text style={styles.causeTitle}>HelpToYou Education Cause</Text>
-          <Text style={styles.causeSub}>
-            8,365 raised of 14,000 for student scholarship & tuition aid
+      <View style={styles.welcomePanel}>
+        <View style={styles.welcomeCopy}>
+          <Text style={styles.eyebrow}>LEARN TOGETHER</Text>
+          <Text style={styles.welcomeTitle}>Guidance starts with a question.</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Connect with students, mentors, and educators who are ready to help.
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Main', { screen: 'AboutUs' })}
-          style={styles.causeLinkBtn}
-        >
-          <Text style={styles.causeLinkText}>Learn More</Text>
-        </TouchableOpacity>
+        <View style={styles.welcomeMark}>
+          <Ionicons name="school" size={25} color="#FFFFFF" />
+        </View>
       </View>
 
       {/* Search Input */}
@@ -396,6 +390,14 @@ export function CommunityFeedScreen() {
         </ScrollView>
       </View>
 
+      <View style={styles.feedHeading}>
+        <View>
+          <Text style={styles.feedTitle}>Community questions</Text>
+          <Text style={styles.feedSubtitle}>Explore questions and share what you know</Text>
+        </View>
+        <Text style={styles.resultCount}>{requests.length}</Text>
+      </View>
+
       {/* Help Requests Feed */}
       <FlatList
         data={requests}
@@ -439,7 +441,7 @@ export function CommunityFeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F5F8F7',
   },
   topBar: {
     flexDirection: 'row',
@@ -507,49 +509,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  causeBanner: {
+  welcomePanel: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#123C32',
     marginHorizontal: 16,
-    marginTop: 12,
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
+    marginTop: 14,
+    padding: 18,
+    minHeight: 132,
+    borderRadius: 18,
+    overflow: 'hidden',
   },
-  causeIconWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#D1FAE5',
+  welcomeCopy: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  eyebrow: {
+    color: '#9BE6C3',
+    fontSize: 10,
+    letterSpacing: 1.4,
+    fontWeight: '800',
+    marginBottom: 7,
+  },
+  welcomeTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    lineHeight: 25,
+    fontWeight: '800',
+    maxWidth: 260,
+  },
+  welcomeSubtitle: {
+    color: '#D1E5DD',
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 6,
+    maxWidth: 280,
+  },
+  welcomeMark: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#245749',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
-  },
-  causeTextCol: {
-    flex: 1,
-  },
-  causeTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primaryDark,
-  },
-  causeSub: {
-    fontSize: 11,
-    color: colors.slateMedium,
-  },
-  causeLinkBtn: {
-    paddingLeft: 8,
-  },
-  causeLinkText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.primaryDark,
   },
   searchSection: {
     paddingHorizontal: 16,
-    marginTop: 10,
+    marginTop: 14,
   },
   searchBar: {
     flexDirection: 'row',
@@ -624,16 +630,50 @@ const styles = StyleSheet.create({
     color: colors.slateDark,
     fontWeight: '700',
   },
+  feedHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 2,
+  },
+  feedTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.slateDark,
+  },
+  feedSubtitle: {
+    color: colors.slateLight,
+    fontSize: 11,
+    marginTop: 2,
+  },
+  resultCount: {
+    minWidth: 30,
+    height: 30,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    overflow: 'hidden',
+    borderRadius: 15,
+    backgroundColor: '#E7F4EE',
+    color: '#176448',
+    fontSize: 12,
+    fontWeight: '800',
+    paddingHorizontal: 8,
+    paddingTop: 7,
+  },
   feedContent: {
-    padding: 16,
-    gap: 14,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+    gap: 12,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 18,
+    padding: 17,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E3EBE7',
     ...shadows.sm,
   },
   cardHeader: {
@@ -696,8 +736,8 @@ const styles = StyleSheet.create({
     color: '#B91C1C',
   },
   questionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
     color: colors.slateDark,
     lineHeight: 21,
     marginBottom: 6,
