@@ -8,13 +8,14 @@ This repository is a working product foundation, not a production-ready communit
 
 - Firebase Authentication handles email/password registration, sign-in, and password reset.
 - Firebase Firestore stores authenticated user profiles, chat, reports, blocking, and notification data.
-- Questions, replies, upvotes, mentor connections, and the member directory still use device-local storage or are not connected to a shared service. They are not visible to other users.
+- Questions, replies, upvotes, and question status use Firestore in source. The matching Firestore rules and Cloud Functions must be deployed before these features are available to users.
+- Mentor discovery and connection requests are still device-local or unconnected; they are not shared between users.
 - The academic assistant is unavailable until a real AI service is configured; it does not generate responses.
-- There are no sample accounts or fabricated community posts. Existing installations remove the app's old sample records during database initialization while preserving user-created local records.
+- There are no sample accounts or fabricated community posts. Existing installations remove the app's old sample records during database initialization. Old user-created local posts are not automatically imported into Firestore.
 - Contact submission and website-specific applicant, sponsor, volunteer, and profile workflows need a confirmed API contract. The existing website uses ASP.NET Web Forms; the app does not guess REST endpoints.
 - Firestore security changes in `firestore.rules` must be deployed to Firebase before they protect the live project.
 
-Do not present local preview content as a live, shared community or use this build to process real applicant information until the remaining backend and security work is complete.
+Do not use this build to process real applicant information until the remaining backend and security work is complete.
 
 ## Run locally
 
@@ -28,4 +29,4 @@ Never commit `.env` or credentials. Keep public runtime configuration limited to
 
 ## Backend and release work
 
-See [APP_PLAN.md](APP_PLAN.md), [API_CONTRACT.md](API_CONTRACT.md), and [TODO.md](TODO.md) for the data model, integration gaps, and release checklist. In particular, the shared question feed, mentor directory, connections, and role verification need production services and rules before release.
+See [APP_PLAN.md](APP_PLAN.md), [API_CONTRACT.md](API_CONTRACT.md), and [TODO.md](TODO.md) for the data model, integration gaps, and release checklist. In particular, the shared question feed needs deployed rules/functions; the mentor directory, connections, role verification, and organization website workflows still need implementation.

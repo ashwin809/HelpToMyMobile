@@ -20,8 +20,6 @@ export interface HelpResponse {
   authorDesignation?: string;
   content: string;
   createdAt: string;
-  isAccepted?: boolean;
-  upvotes: number;
 }
 
 export interface HelpRequest {

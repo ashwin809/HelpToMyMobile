@@ -1,6 +1,6 @@
 # Backend/API contract status
 
-The app currently has **no confirmed JSON API calls**. The project is deliberately configured without a default API hostname or speculative `/api/...` routes.
+The app currently has **no confirmed JSON API calls to the HelpToYou website**. The project is deliberately configured without a default API hostname or speculative `/api/...` routes. Firebase is used for app authentication, private profiles, chat, and the shared question feature implemented in this repository.
 
 ## What the saved website pages expose
 
@@ -20,7 +20,7 @@ The Web Forms posts depend on server-generated state and session behavior. The m
 
 ## Mobile service layer
 
-`src/api/apiClient.ts` creates a JSON HTTP client only when `EXPO_PUBLIC_API_BASE_URL` is configured. Domain service methods currently fail with `BackendApiRequiredError`; they do not make requests, fabricate success, or persist synthetic records.
+`src/api/apiClient.ts` creates a JSON HTTP client only when `EXPO_PUBLIC_API_BASE_URL` is configured. Website-specific domain service methods fail with `BackendApiRequiredError`; they do not make requests, fabricate success, or persist synthetic records. Community questions and answers use Firebase Firestore and need the matching security rules and Cloud Functions deployed.
 
 ## Required backend information
 

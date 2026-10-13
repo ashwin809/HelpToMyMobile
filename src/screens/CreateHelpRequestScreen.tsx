@@ -12,7 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
-import { db } from '../storage/db';
+import { communityService } from '../services/communityService';
 import { HelpCategory } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Button, Input } from '../components/common';
@@ -77,7 +77,7 @@ export function CreateHelpRequestScreen() {
       .filter(Boolean);
 
     try {
-      const created = await db.createHelpRequest({
+      const created = await communityService.createHelpRequest({
         title: title.trim(),
         description: description.trim(),
         category,

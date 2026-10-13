@@ -2,7 +2,10 @@
 
 ## Shared community backend
 
-- [ ] Move questions, answers, upvotes, and status changes from device storage to a shared, authenticated service.
+- [x] Implement shared Firestore questions, answers, per-user votes, and status changes in app source.
+- [ ] Deploy Firestore rules and response/vote count Cloud Functions; verify with authenticated test accounts.
+- [ ] Add user-visible pagination for the 50 most recent questions and up to 200 answers per thread.
+- [ ] Plan export/import for existing user-created AsyncStorage questions before retiring local storage.
 - [ ] Publish only approved public profile fields to the mentor directory; keep contact details and addresses private.
 - [ ] Move connection requests and decisions to a shared service with authorization for both participants.
 - [ ] Add pagination, duplicate-submit protection, and offline/error states for shared content.

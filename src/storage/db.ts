@@ -192,8 +192,6 @@ class DatabaseService {
       authorDesignation: payload.author.designation,
       content: payload.content.trim(),
       createdAt: new Date().toISOString(),
-      isAccepted: false,
-      upvotes: 0,
     };
 
     const currentList = responsesMap[payload.requestId] || [];

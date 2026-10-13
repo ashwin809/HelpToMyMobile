@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
 import { getAuthErrorMessage } from '../services/authService';
-import { db } from '../storage/db';
+import { communityService } from '../services/communityService';
 import { HelpRequest } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Badge, Button } from '../components/common';
@@ -30,7 +30,7 @@ export function ProfileScreen() {
   const loadUserData = useCallback(async () => {
     if (!user) return;
     try {
-      const requests = await db.getHelpRequests({ authorId: user.id });
+      const requests = await communityService.getHelpRequests({ authorId: user.id });
       setMyRequests(requests);
 
     } catch (err) {
@@ -168,7 +168,7 @@ export function ProfileScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statCol}>
             <Text style={styles.statNum}>{myRequests.length}</Text>
-            <Text style={styles.statLabel}>Questions Posted</Text>
+            <Text style={styles.statLabel}>Recent Questions</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCol}>

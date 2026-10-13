@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Image,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,7 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
-import { db } from '../storage/db';
+import { communityService } from '../services/communityService';
 import { HelpRequest, HelpCategory } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Badge } from '../components/common';
@@ -50,6 +51,7 @@ export function CommunityFeedScreen() {
   const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [feedError, setFeedError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -69,14 +71,16 @@ export function CommunityFeedScreen() {
 
   const loadRequests = useCallback(async () => {
     try {
-      const data = await db.getHelpRequests({
+      const data = await communityService.getHelpRequests({
         category: selectedCategory === 'All' ? undefined : selectedCategory,
         university: selectedUniversity === 'All Universities' ? undefined : selectedUniversity,
         query: searchQuery,
       });
       setRequests(data.filter((request) => !blockedUserIds.has(request.authorId)));
+      setFeedError(null);
     } catch (err) {
       console.warn('Failed to load requests:', err);
+      setFeedError('Could not load questions. Check your connection and try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -95,10 +99,13 @@ export function CommunityFeedScreen() {
   };
 
   const handleUpvote = async (requestId: string) => {
-    await db.toggleUpvoteRequest(requestId);
-    setRequests((prev) =>
-      prev.map((r) => (r.id === requestId ? { ...r, upvotes: (r.upvotes || 0) + 1 } : r))
-    );
+    if (!user) return;
+    try {
+      const upvotes = await communityService.toggleUpvoteRequest(requestId, user.id);
+      setRequests((prev) => prev.map((r) => (r.id === requestId ? { ...r, upvotes } : r)));
+    } catch (error) {
+      Alert.alert('Could not update vote', 'Please try again in a moment.');
+    }
   };
 
   const renderHelpCard = ({ item }: { item: HelpRequest }) => {
@@ -297,7 +304,7 @@ export function CommunityFeedScreen() {
             Connect with students, mentors, and educators who are ready to help.
           </Text>
           <Text style={styles.previewNote}>
-            Preview mode · Posts are saved on this device
+            Shared questions are available after the Firebase community service is deployed.
           </Text>
         </View>
         <View style={styles.welcomeMark}>
@@ -398,7 +405,6 @@ export function CommunityFeedScreen() {
           <Text style={styles.feedTitle}>Community questions</Text>
           <Text style={styles.feedSubtitle}>Explore questions and share what you know</Text>
         </View>
-        <Text style={styles.resultCount}>{requests.length}</Text>
       </View>
 
       {/* Help Requests Feed */}
@@ -417,16 +423,22 @@ export function CommunityFeedScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="chatbubble-ellipses-outline" size={48} color={colors.slateMuted} />
-            <Text style={styles.emptyTitle}>No questions found</Text>
+            <Text style={styles.emptyTitle}>{feedError ? 'Questions unavailable' : 'No questions found'}</Text>
             <Text style={styles.emptySubtitle}>
-              Be the first to post a question for professors and mentors!
+              {feedError || 'Be the first to post a question for professors and mentors!'}
             </Text>
-            <TouchableOpacity
-              style={styles.emptyAskBtn}
-              onPress={() => navigation.navigate('CreateHelpRequest', {})}
-            >
-              <Text style={styles.emptyAskBtnText}>+ Ask For Guidance</Text>
-            </TouchableOpacity>
+            {feedError ? (
+              <TouchableOpacity style={styles.emptyAskBtn} onPress={handleRefresh}>
+                <Text style={styles.emptyAskBtnText}>Try again</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.emptyAskBtn}
+                onPress={() => navigation.navigate('CreateHelpRequest', {})}
+              >
+                <Text style={styles.emptyAskBtnText}>+ Ask For Guidance</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -657,20 +669,6 @@ const styles = StyleSheet.create({
     color: colors.slateLight,
     fontSize: 11,
     marginTop: 2,
-  },
-  resultCount: {
-    minWidth: 30,
-    height: 30,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    overflow: 'hidden',
-    borderRadius: 15,
-    backgroundColor: '#E7F4EE',
-    color: '#176448',
-    fontSize: 12,
-    fontWeight: '800',
-    paddingHorizontal: 8,
-    paddingTop: 7,
   },
   feedContent: {
     paddingHorizontal: 16,

@@ -13,7 +13,7 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
-import { db } from '../storage/db';
+import { communityService } from '../services/communityService';
 import { HelpRequest, HelpResponse } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Badge, Button } from '../components/common';
@@ -29,15 +29,18 @@ export function HelpDetailScreen() {
 
   const [request, setRequest] = useState<HelpRequest | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
-      const data = await db.getHelpRequestById(requestId);
+      const data = await communityService.getHelpRequestById(requestId);
       setRequest(data);
+      setLoadError(false);
     } catch (err) {
       console.warn('Failed to load request:', err);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -59,7 +62,7 @@ export function HelpDetailScreen() {
 
     setSubmittingReply(true);
     try {
-      await db.addResponseToRequest({
+      await communityService.addResponseToRequest({
         requestId,
         content: replyText.trim(),
         author: user,
@@ -75,7 +78,7 @@ export function HelpDetailScreen() {
 
   const handleMarkResolved = async () => {
     try {
-      await db.updateRequestStatus(requestId, 'resolved');
+      await communityService.updateRequestStatus(requestId, 'resolved');
       Alert.alert('Success', 'Question marked as resolved.');
       await loadData();
     } catch (err) {
@@ -85,8 +88,13 @@ export function HelpDetailScreen() {
 
   const handleUpvote = async () => {
     if (!request) return;
-    await db.toggleUpvoteRequest(request.id);
-    setRequest((prev) => (prev ? { ...prev, upvotes: (prev.upvotes || 0) + 1 } : null));
+    if (!user) return;
+    try {
+      const upvotes = await communityService.toggleUpvoteRequest(request.id, user.id);
+      setRequest((prev) => (prev ? { ...prev, upvotes } : null));
+    } catch {
+      Alert.alert('Could not update vote', 'Please try again in a moment.');
+    }
   };
 
   if (loading) {
@@ -100,7 +108,14 @@ export function HelpDetailScreen() {
   if (!request) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Help request not found.</Text>
+        <Text style={styles.errorText}>
+          {loadError ? 'Could not load this question. Check your connection and try again.' : 'Help request not found.'}
+        </Text>
+        {loadError && (
+          <TouchableOpacity style={styles.backButton} onPress={() => { setLoading(true); loadData(); }}>
+            <Text style={styles.backButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -222,7 +237,7 @@ export function HelpDetailScreen() {
         {/* Responses Thread */}
         <View style={styles.threadHeader}>
           <Text style={styles.threadTitle}>
-            Responses & Guidance ({request.responses?.length || 0})
+            Responses & Guidance
           </Text>
           <Text style={styles.threadSubtitle}>
             Community responses from students, alumni, and educators
@@ -259,12 +274,6 @@ export function HelpDetailScreen() {
                           : 'neutral'
                       }
                     />
-                    {resp.isAccepted && (
-                      <View style={styles.acceptedBadge}>
-                        <Ionicons name="checkmark" size={12} color="#059669" />
-                        <Text style={styles.acceptedText}>Helpful Answer</Text>
-                      </View>
-                    )}
                   </View>
                   <Text style={styles.respAffiliation}>
                     {resp.authorDesignation || resp.authorUniversity || 'Academic Mentor'}
@@ -274,12 +283,6 @@ export function HelpDetailScreen() {
 
               <Text style={styles.respContent}>{resp.content}</Text>
 
-              <View style={styles.respFooter}>
-                <View style={styles.respHelpfulRow}>
-                  <Ionicons name="thumbs-up-outline" size={14} color={colors.slateMedium} />
-                  <Text style={styles.respHelpfulCount}>{resp.upvotes || 0} found this helpful</Text>
-                </View>
-              </View>
             </View>
           ))
         )}
@@ -597,22 +600,6 @@ const styles = StyleSheet.create({
     color: colors.slateDark,
     lineHeight: 20,
     marginBottom: 10,
-  },
-  respFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F8FAFC',
-    paddingTop: 8,
-  },
-  respHelpfulRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  respHelpfulCount: {
-    fontSize: 12,
-    color: colors.slateMedium,
   },
   replyCard: {
     backgroundColor: '#FFFFFF',

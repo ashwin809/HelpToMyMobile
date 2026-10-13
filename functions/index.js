@@ -1,10 +1,45 @@
 const admin = require('firebase-admin');
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onDocumentCreated, onDocumentDeleted } = require('firebase-functions/v2/firestore');
 const { logger } = require('firebase-functions');
 
 admin.initializeApp();
 const firestore = admin.firestore();
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
+
+async function applyCommunityCounter(event, requestId, field, delta, nextStatus) {
+  const requestRef = firestore.collection('helpRequests').doc(requestId);
+  const processedEventRef = firestore.collection('systemEvents').doc(encodeURIComponent(event.id));
+
+  await firestore.runTransaction(async (transaction) => {
+    const processedEvent = await transaction.get(processedEventRef);
+    if (processedEvent.exists) return;
+
+    const requestSnapshot = await transaction.get(requestRef);
+    if (!requestSnapshot.exists) return;
+
+    const currentCount = Number(requestSnapshot.get(field)) || 0;
+    const updates = { [field]: Math.max(0, currentCount + delta) };
+    if (nextStatus && requestSnapshot.get('status') === 'open') updates.status = nextStatus;
+
+    transaction.update(requestRef, updates);
+    transaction.create(processedEventRef, { processedAt: admin.firestore.FieldValue.serverTimestamp() });
+  });
+}
+
+exports.countHelpResponse = onDocumentCreated(
+  { document: 'helpRequests/{requestId}/responses/{responseId}', retry: true },
+  async (event) => applyCommunityCounter(event, event.params.requestId, 'responseCount', 1, 'in_progress'),
+);
+
+exports.countHelpRequestUpvote = onDocumentCreated(
+  { document: 'helpRequests/{requestId}/upvotes/{userId}', retry: true },
+  async (event) => applyCommunityCounter(event, event.params.requestId, 'upvotes', 1),
+);
+
+exports.removeHelpRequestUpvote = onDocumentDeleted(
+  { document: 'helpRequests/{requestId}/upvotes/{userId}', retry: true },
+  async (event) => applyCommunityCounter(event, event.params.requestId, 'upvotes', -1),
+);
 
 async function deliverExpoPush(userId, notification, data = {}) {
   const tokenSnapshot = await firestore
