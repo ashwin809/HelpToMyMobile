@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -68,7 +70,10 @@ export function EditProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View style={styles.header}>
         <TouchableOpacity style={styles.navBack} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.slateDark} />
@@ -77,7 +82,12 @@ export function EditProfileScreen() {
         <View style={{ width: 32 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Academic & Personal Details</Text>
 
@@ -167,7 +177,7 @@ export function EditProfileScreen() {
           />
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -193,6 +203,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.slateDark,
+  },
+  scrollView: {
+    flex: 1,
   },
   scrollContent: {
     padding: 16,
