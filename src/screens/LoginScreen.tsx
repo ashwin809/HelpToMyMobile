@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -19,11 +19,15 @@ type Navigation = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 export function LoginScreen() {
   const navigation = useNavigation<Navigation>();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, sessionExpired } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  useEffect(() => {
+    if (sessionExpired) setErrorMessage('Your session expired. Sign in again to continue.');
+  }, [sessionExpired]);
+
   const handleLogin = async () => {
     if (!email.trim()) {
       setErrorMessage('Please enter your email address.');

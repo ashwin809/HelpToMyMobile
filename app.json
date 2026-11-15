@@ -2,6 +2,7 @@
   "expo": {
     "name": "HelpToYou",
     "slug": "helptoyou",
+    "scheme": "helptoyou",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,6 +28,14 @@
     },
     "plugins": [
       "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow HelpToYou to use a photo you choose as your profile picture.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
       "expo-sharing",
       "expo-status-bar",
       "expo-notifications"

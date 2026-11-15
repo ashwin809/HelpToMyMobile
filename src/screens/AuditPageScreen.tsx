@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Input } from '../components/common';
 import { useAuth } from '../hooks/useAuth';
 import { getAuthErrorMessage } from '../services/authService';
+import { contactService } from '../services/contactService';
 import { PublicTabParamList, RootStackParamList } from '../navigation/types';
 import { colors } from '../theme';
 
@@ -24,14 +25,28 @@ export function AuditPageScreen({ page, role }: Props) {
   const [selectedRole, setSelectedRole] = React.useState(role);
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [contactName, setContactName] = React.useState('');
+  const [contactEmail, setContactEmail] = React.useState('');
+  const [contactSubject, setContactSubject] = React.useState('');
+  const [contactMessage, setContactMessage] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const { isAuthenticated, login, logout } = useAuth();
-  const submitBlocked = () => Alert.alert('Backend/API required', 'This action is not connected: the audit found an ASP.NET Web Forms postback, but no supported mobile API contract.');
+  const submitBlocked = () => Alert.alert('Workflow not connected', 'This organization-specific workflow needs its fields and approval process defined before it can be safely submitted.');
   const tryLogin = async () => {
     setBusy(true);
     try { await login({ email, password }); navigation.navigate('Main'); }
     catch (error) { Alert.alert('Login Failed', getAuthErrorMessage(error)); }
     finally { setBusy(false); }
+  };
+  const sendContactMessage = async () => {
+    setBusy(true);
+    try {
+      await contactService.submitMessage({ name: contactName, email: contactEmail, subject: contactSubject, message: contactMessage });
+      setContactName(''); setContactEmail(''); setContactSubject(''); setContactMessage('');
+      Alert.alert('Message received', 'Thank you for contacting HelpToYou.');
+    } catch (error) {
+      Alert.alert('Could not send message', getAuthErrorMessage(error));
+    } finally { setBusy(false); }
   };
   const action = (title: string, onPress: () => void) => <Button key={title} title={title} onPress={onPress} style={styles.button} />;
   const title: Record<AuditPage, string> = {
@@ -57,7 +72,7 @@ export function AuditPageScreen({ page, role }: Props) {
     </>}
     {page === 'WhatWeDo' && <Text style={styles.body}>Mission, screening, matching, and application information from the organization. Saved page copy needs live verification.</Text>}
     {page === 'AboutUs' && <Text style={styles.body}>Organization and team information. The saved copy names Pranav Kalyan, Senthil Krishnaswamy, Sathya Ramaswamy, Manivannan Arumugam, and Kalyana Kumar Mohan.</Text>}
-    {page === 'ContactUs' && <>{field('Name')}{field('Email', { keyboardType: 'email-address' })}{field('Subject')}{field('Message', { multiline: true })}<Text style={styles.todo}>TODO: BACKEND/API REQUIRED — ContactUs.aspx postback; no mobile endpoint is known.</Text>{action('Submit (backend required)', submitBlocked)}{action('Email info@helptoyou.org', () => { void Linking.openURL('mailto:info@helptoyou.org'); })}</>}
+    {page === 'ContactUs' && <>{field('Name', { value: contactName, onChangeText: setContactName })}{field('Email', { keyboardType: 'email-address', value: contactEmail, onChangeText: setContactEmail })}{field('Subject', { value: contactSubject, onChangeText: setContactSubject })}{field('Message', { multiline: true, value: contactMessage, onChangeText: setContactMessage })}{action(busy ? 'Sending…' : 'Submit contact message', () => { void sendContactMessage(); })}{action('Email info@helptoyou.org', () => { void Linking.openURL('mailto:info@helptoyou.org'); })}</>}
     {page === 'Login' && <>{field('Email ID', { keyboardType: 'email-address', value: email, onChangeText: setEmail })}{field('Password', { secureTextEntry: true, value: password, onChangeText: setPassword })}{action(busy ? 'Working…' : 'Login', () => { void tryLogin(); })}{action('Forgot your password?', () => navigation.navigate('ForgotPassword'))}</>}
     {page === 'Register' && <>
       {!selectedRole && <View>{(['Sponsor', 'Volunteer', 'Applicant'] as const).map((r) => action(r, () => setSelectedRole(r)))}</View>}

@@ -1,29 +1,26 @@
 # Project progress
 
-**Stage:** Initial mobile architecture and audited-page placeholders
+**Stage:** Core Node.js/PostgreSQL migration and local demo flow verified; production hardening remains.
 
-## Completed
+## Implemented
 
-- Expo / React Native / TypeScript project configuration
-- Typed React Navigation tabs and stack for pages/actions established by the audit
-- In-memory auth context with explicit unknown-backend behavior
-- Axios client without a guessed API host or REST paths
-- Auth/contact service contracts that fail closed rather than simulate success
-- Reusable UI components and page field placeholders
-- API contract and environment configuration documentation
-- Removed unverified mock dashboards, donations, causes directory, notifications, and related screens from the application source
+- Express API routes and PostgreSQL schema for authentication, profiles, community questions/replies/votes, mentor discovery/connections, chat, notifications, safety, push tokens, and contact messages
+- Bcrypt password hashing and revocable, database-backed JWT sessions
+- Mobile service layer connected to the API for the above features
+- Node.js and PostgreSQL are the app's only active backend and deployment path
+- Environment examples, API contract, migration script, and setup documentation
 
-## Verification
+## Not yet connected or complete
 
-- `npm.cmd run ts:check` — passing after the current screen update (rerun before handoff)
-- `npx.cmd expo config --type public` — passing, Expo SDK 52 config resolved
-- Expo dev server — starts offline on port 8082
-- Metro iOS bundle — HTTP 200
-- Metro Android bundle — HTTP 200
+- Local PostgreSQL is running and the API health endpoint reports `database: connected`. Registration, case-insensitive login, authenticated profile update, and logout have been smoke-tested locally.
+- The API is still a local development host; configure a deployed API URL before release.
+- Existing local-device content is not imported.
+- Password recovery, email verification, admin moderation, verified academic credentials, account export/deletion, and production operations remain future work.
+- Chat and notifications use polling, and the app does not yet offer pagination controls.
+- Separate organization-site workflows still require product requirements.
 
-## Not complete
+## Verification completed
 
-- No API endpoint is connected; backend-dependent forms are placeholders
-- Firebase email/password authentication, native session persistence, and UID-keyed Firestore profiles are implemented
-- Live-site audit could not be repeated in this environment; see `README.md`
-- Production feature parity and end-to-end tests remain future work after backend access
+- `npm run ts:check` passes.
+- Server entry points pass Node syntax checks.
+- iOS and web Metro exports complete after excluding the broken OneDrive backup directory from Metro's file crawler.

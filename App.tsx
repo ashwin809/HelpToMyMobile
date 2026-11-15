@@ -3,11 +3,17 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createNavigationContainerRef, NavigationContainer } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 import { AuthProvider } from './src/hooks/useAuth';
 import { AppNavigator } from './src/navigation';
 import { RootStackParamList } from './src/navigation/types';
+import { APP_CONFIG } from './src/constants/config';
 
 const navigationRef = createNavigationContainerRef<RootStackParamList>();
+const linking = {
+  prefixes: [APP_CONFIG.appUrl, 'helptoyou://', Linking.createURL('/')],
+  config: { screens: { ResetPassword: 'reset-password' } },
+};
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -50,7 +56,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer ref={navigationRef}>
+        <NavigationContainer ref={navigationRef} linking={linking}>
           <StatusBar style="dark" />
           <AppNavigator />
         </NavigationContainer>

@@ -20,6 +20,7 @@ export interface HelpResponse {
   authorDesignation?: string;
   content: string;
   createdAt: string;
+  isAccepted?: boolean;
 }
 
 export interface HelpRequest {
@@ -41,6 +42,7 @@ export interface HelpRequest {
   upvotes: number;
   tags: string[];
   responses?: HelpResponse[];
+  acceptedResponseId?: string | null;
 }
 
 export interface Institution {
@@ -57,7 +59,7 @@ export interface Connection {
   id: string;
   fromUserId: string;
   toUserId: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
   createdAt: string;
   message?: string;
 }

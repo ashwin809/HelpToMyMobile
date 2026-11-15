@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN profile_setup_step SMALLINT NOT NULL DEFAULT 3 CHECK (profile_setup_step BETWEEN 1 AND 3);
+ALTER TABLE users ADD COLUMN profile_setup_complete BOOLEAN NOT NULL DEFAULT TRUE;

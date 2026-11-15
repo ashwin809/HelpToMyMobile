@@ -1,32 +1,29 @@
-﻿# Production readiness work
+# Node.js and PostgreSQL delivery checklist
 
-## Shared community backend
+## Local backend
 
-- [x] Implement shared Firestore questions, answers, per-user votes, and status changes in app source.
-- [ ] Deploy Firestore rules and response/vote count Cloud Functions; verify with authenticated test accounts.
-- [ ] Add user-visible pagination for the 50 most recent questions and up to 200 answers per thread.
-- [ ] Plan export/import for existing user-created AsyncStorage questions before retiring local storage.
-- [ ] Publish only approved public profile fields to the mentor directory; keep contact details and addresses private.
-- [ ] Move connection requests and decisions to a shared service with authorization for both participants.
-- [ ] Add pagination, duplicate-submit protection, and offline/error states for shared content.
-- [ ] Remove preview-only wording after the shared service is live and verified.
-
-## Identity, safety, and privacy
-
-- [ ] Define how professional roles are reviewed; email verification alone does not verify academic credentials.
-- [ ] Review and deploy Firestore rules from `firestore.rules` after emulator/rules tests.
-- [ ] Add retention, account deletion, and data export behavior for profile and community data.
-- [ ] Verify reports, blocks, notifications, and chat rules against authenticated test accounts.
-
-## Organization website workflows
-
-- [ ] Obtain the supported mobile API base URL and API contract.
-- [ ] Confirm applicant, sponsor, volunteer, contact, profile, password change, and password recovery workflows.
-- [ ] Connect those flows only to documented endpoints; do not replay Web Forms postbacks as a substitute.
-- [ ] Confirm any mission or fundraising metrics against an authoritative source before displaying numbers.
+- [x] Add PostgreSQL schema for application accounts, community, mentor connections, chat, notifications, safety, push tokens, and contact messages.
+- [x] Add Express API routes and validation for those services.
+- [x] Move app authentication, profiles, community, mentors, chat, notifications, safety actions, push-token registration, and contact messages to the Node API.
+- [x] Use Node.js and PostgreSQL as the mobile app's only active backend and data service.
+- [x] Configure the local PostgreSQL database and apply its migrations.
+- [ ] Exercise all API routes using authenticated accounts and verify authorization boundaries (basic auth/profile smoke flow is now verified).
+- [ ] Add automated API and PostgreSQL integration tests.
+- [ ] Configure password recovery email delivery; decide whether email verification is mandatory.
+- [ ] Confirm whether selected Supabase services will be part of the final architecture.
+- [x] Implement optional Google Calendar linking for accepted appointments using the Calendar Events scope.
+- [ ] Configure Google OAuth credentials, a public HTTPS callback, and the stable refresh-token encryption key.
+- [ ] Keep HelpToYou data, authentication, and deployment separate from Agoura Math Circle unless a separate integration is approved.
+- [ ] Store native session tokens in platform secure storage.
+- [ ] Add data export/import for old local-device records if needed.
+- [ ] Add admin workflows for professional-role review and report moderation.
+- [ ] Add user-visible feed/message pagination, offline handling, and submit deduplication.
+- [ ] Replace polling for chat and notification updates if realtime delivery is required.
 
 ## Release
 
-- [ ] Verify the app on current Android, iOS, and web targets.
-- [ ] Complete accessibility, responsive layout, error, loading, and empty-state reviews.
-- [ ] Configure production Firebase, app signing, monitoring, privacy policy, and support contact.
+- [ ] Choose API and PostgreSQL hosting; configure TLS, secrets, database backups, monitoring, and migrations.
+- [ ] Verify Android, iOS, and web against the deployed API.
+- [ ] Complete accessibility, privacy, account deletion, retention, and support-contact review.
+- [ ] Obtain and verify any organization-specific applicant, sponsor, and volunteer workflow requirements before implementing them.
+- [ ] Confirm fundraising metrics with an authoritative source before showing progress numbers.

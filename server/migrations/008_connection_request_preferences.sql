@@ -1,0 +1,2 @@
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS allow_connection_requests BOOLEAN NOT NULL DEFAULT TRUE;

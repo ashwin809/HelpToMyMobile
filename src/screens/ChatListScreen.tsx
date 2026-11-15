@@ -57,18 +57,19 @@ export function ChatListScreen({ isTab = false }: { isTab?: boolean }) {
   const renderThread = ({ item }: { item: ChatThread }) => {
     // In a real app, you would fetch user profiles to show names/avatars.
     // For now, we'll just show the ID or a placeholder.
-    const otherParticipantId = item.participants.find(id => id !== user?.id) || 'Unknown';
+    const otherParticipantId = item.otherParticipantId || item.participants.find(id => id !== user?.id) || 'Unknown';
+    const otherParticipantName = item.otherParticipantName || `User ${otherParticipantId.slice(0, 4)}`;
     
     return (
       <TouchableOpacity 
         style={styles.threadCard}
-        onPress={() => navigation.navigate('ChatThread', { threadId: item.id, participantName: `User ${otherParticipantId.slice(0, 4)}` })}
+        onPress={() => navigation.navigate('ChatThread', { threadId: item.id, participantName: otherParticipantName })}
       >
         <View style={styles.avatar}>
           <Ionicons name="person" size={20} color={colors.primary} />
         </View>
         <View style={styles.threadInfo}>
-          <Text style={styles.participantName}>User {otherParticipantId.slice(0, 4)}</Text>
+          <Text style={styles.participantName}>{otherParticipantName}</Text>
           <Text style={styles.lastMessage} numberOfLines={1}>
             {item.lastMessage ? item.lastMessage.text : 'New chat created'}
           </Text>

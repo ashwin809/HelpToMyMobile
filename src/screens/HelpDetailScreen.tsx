@@ -18,6 +18,8 @@ import { HelpRequest, HelpResponse } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Badge, Button } from '../components/common';
 import { showUserSafetyActions } from '../utils/userSafetyActions';
+import { growthService } from '../services/growthService';
+import { hasAnyRole, MENTOR_ROLES } from '../utils/rolePermissions';
 
 type RouteProps = RouteProp<RootStackParamList, 'HelpDetail'>;
 
@@ -25,6 +27,7 @@ export function HelpDetailScreen() {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation();
   const { user } = useAuth();
+  const canReply = hasAnyRole(user, MENTOR_ROLES);
   const { requestId } = route.params;
 
   const [request, setRequest] = useState<HelpRequest | null>(null);
@@ -32,6 +35,7 @@ export function HelpDetailScreen() {
   const [loadError, setLoadError] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
+  const [acceptingResponseId, setAcceptingResponseId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -95,6 +99,17 @@ export function HelpDetailScreen() {
     } catch {
       Alert.alert('Could not update vote', 'Please try again in a moment.');
     }
+  };
+
+  const handleAcceptResponse = async (responseId: string) => {
+    if (!request || !isAuthor) return;
+    setAcceptingResponseId(responseId);
+    try {
+      await growthService.acceptAnswer(request.id, responseId);
+      await loadData();
+    } catch (error) {
+      Alert.alert('Could not mark answer', error instanceof Error ? error.message : 'Please try again.');
+    } finally { setAcceptingResponseId(null); }
   };
 
   if (loading) {
@@ -240,7 +255,7 @@ export function HelpDetailScreen() {
             Responses & Guidance
           </Text>
           <Text style={styles.threadSubtitle}>
-            Community responses from students, alumni, and educators
+            Guidance from faculty and alumni mentors
           </Text>
         </View>
 
@@ -248,7 +263,7 @@ export function HelpDetailScreen() {
           <View style={styles.noResponsesBox}>
             <Ionicons name="chatbubbles-outline" size={36} color={colors.slateMuted} />
             <Text style={styles.noResponsesText}>
-              No one has replied yet. Be the first to help!
+              No one has replied yet. Faculty and alumni mentors can share guidance.
             </Text>
           </View>
         ) : (
@@ -279,16 +294,24 @@ export function HelpDetailScreen() {
                     {resp.authorDesignation || resp.authorUniversity || 'Academic Mentor'}
                   </Text>
                 </View>
+                {resp.isAccepted && <View style={styles.acceptedBadge}><Ionicons name="checkmark-circle" size={13} color="#16704F" /><Text style={styles.acceptedText}>Author's pick</Text></View>}
               </View>
 
               <Text style={styles.respContent}>{resp.content}</Text>
+
+              {isAuthor && !resp.isAccepted && (
+                <TouchableOpacity style={styles.chooseAnswerButton} disabled={acceptingResponseId === resp.id} onPress={() => void handleAcceptResponse(resp.id)}>
+                  <Ionicons name="checkmark-done-outline" size={16} color={colors.primaryDark} />
+                  <Text style={styles.chooseAnswerText}>{acceptingResponseId === resp.id ? 'Saving...' : 'Mark as best answer'}</Text>
+                </TouchableOpacity>
+              )}
 
             </View>
           ))
         )}
 
         {/* Reply Form */}
-        <View style={styles.replyCard}>
+        {canReply && <View style={styles.replyCard}>
           <Text style={styles.replyCardTitle}>Offer Your Guidance</Text>
           {user ? (
             <Text style={styles.replyingAs}>
@@ -316,7 +339,7 @@ export function HelpDetailScreen() {
             loading={submittingReply}
             style={styles.postBtn}
           />
-        </View>
+        </View>}
       </ScrollView>
     </View>
   );
@@ -590,6 +613,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#059669',
   },
+  chooseAnswerButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: '#E4F5EC' },
+  chooseAnswerText: { color: colors.primaryDark, fontSize: 11, fontWeight: '700' },
   respAffiliation: {
     fontSize: 11,
     color: colors.slateMedium,

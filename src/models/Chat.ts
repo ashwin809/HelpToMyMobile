@@ -10,6 +10,9 @@ export interface ChatMessage {
 export interface ChatThread {
   id: string;
   participants: string[]; // User IDs
+  otherParticipantId?: string;
+  otherParticipantName?: string;
   lastMessage?: ChatMessage;
   updatedAt: string;
+  unreadCount?: number;
 }

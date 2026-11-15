@@ -9,19 +9,23 @@ import {
   Image,
   ScrollView,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
-import { db } from '../storage/db';
 import { User, Connection } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Badge } from '../components/common';
 import { chatService } from '../services/chatService';
+import { mentorService } from '../services/mentorService';
 import { reportBlockService } from '../services/reportBlockService';
 import { showUserSafetyActions } from '../utils/userSafetyActions';
+import { hasAnyRole, LEARNER_ROLES } from '../utils/rolePermissions';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
@@ -33,15 +37,27 @@ const UNIVERSITIES = [
   'NIT Trichy',
 ];
 
-const ROLES = ['All', 'Professor', 'Alumni', 'Student', 'Sponsor'];
+const ROLES = ['All', 'Professor', 'Alumni'];
+
+function matchDetails(student: User | null, mentor: User) {
+  const studentSkills = new Set((student?.skills || []).map((skill) => skill.trim().toLowerCase()));
+  const sharedSkills = (mentor.skills || []).filter((skill) => studentSkills.has(skill.trim().toLowerCase()));
+  const sameUniversity = Boolean(student?.university && mentor.university && student.university.toLowerCase() === mentor.university.toLowerCase());
+  const sameDepartment = Boolean(student?.department && mentor.department && student.department.toLowerCase() === mentor.department.toLowerCase());
+  const score = Math.min(98, 38 + sharedSkills.length * 15 + (sameUniversity ? 25 : 0) + (sameDepartment ? 12 : 0));
+  const reasons = [...(sharedSkills.length ? [`${sharedSkills.length} shared topic${sharedSkills.length === 1 ? '' : 's'}`] : []), ...(sameUniversity ? ['same institution'] : []), ...(sameDepartment ? ['same field'] : [])];
+  return { score, reason: reasons.length ? reasons.join(' - ') : 'Based on your academic profile' };
+}
 
 export function MentorsScreen() {
   const navigation = useNavigation<Navigation>();
   const { user } = useAuth();
+  const canRequestMentor = hasAnyRole(user, LEARNER_ROLES);
 
   const [mentors, setMentors] = useState<User[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,38 +77,18 @@ export function MentorsScreen() {
   }, [user?.id]);
 
   const loadMentors = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
-      const all = await db.getUsers();
-      let filtered = all.filter((u) => u.id !== user?.id && !blockedUserIds.has(u.id));
-
-      if (selectedUniversity !== 'All Universities') {
-        filtered = filtered.filter((m) =>
-          m.university?.toLowerCase().includes(selectedUniversity.toLowerCase())
-        );
-      }
-      if (selectedRole !== 'All') {
-        filtered = filtered.filter((m) => m.userType === selectedRole);
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(
-          (m) =>
-            m.firstName.toLowerCase().includes(q) ||
-            m.lastName.toLowerCase().includes(q) ||
-            m.university?.toLowerCase().includes(q) ||
-            m.department?.toLowerCase().includes(q) ||
-            (m.skills || []).some((s) => s.toLowerCase().includes(q))
-        );
-      }
-
-      setMentors(filtered);
-
-      if (user) {
-        const conns = await db.getConnections(user.id);
-        setConnections(conns);
-      }
+      const [all, connections] = await Promise.all([
+        mentorService.getMentors({ university: selectedUniversity, role: selectedRole, search: searchQuery.trim() || undefined }),
+        mentorService.getConnections(),
+      ]);
+      setMentors(all.filter((mentor) => !blockedUserIds.has(mentor.id)));
+      setConnections(connections);
     } catch (err) {
       console.warn('Failed to load mentors:', err);
+      setLoadError('Could not load helper and mentor profiles. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -109,8 +105,7 @@ export function MentorsScreen() {
     }
 
     try {
-      const conn = await db.connectWithUser(
-        user.id,
+      const conn = await mentorService.connectWithUser(
         targetUser.id,
         `Hello ${targetUser.firstName}, I would like to seek your guidance.`
       );
@@ -143,6 +138,7 @@ export function MentorsScreen() {
   const renderMentorCard = ({ item }: { item: User }) => {
     const connected = isConnected(item.id);
     const pending = isPending(item.id);
+    const match = matchDetails(user, item);
 
     return (
       <View style={styles.card}>
@@ -159,7 +155,7 @@ export function MentorsScreen() {
           />
           <View style={styles.headerInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.mentorName}>
+              <Text style={styles.mentorName} numberOfLines={1} ellipsizeMode="tail">
                 {item.firstName} {item.lastName}
               </Text>
               {item.isVerified && (
@@ -205,7 +201,7 @@ export function MentorsScreen() {
         {/* Institution & Department */}
         <View style={styles.institutionRow}>
           <Ionicons name="business-outline" size={14} color={colors.primaryDark} />
-          <Text style={styles.institutionText}>{item.university}</Text>
+          <Text style={styles.institutionText} numberOfLines={2} ellipsizeMode="tail">{item.university}</Text>
         </View>
         {item.department ? (
           <Text style={styles.deptText}>Dept: {item.department}</Text>
@@ -234,8 +230,22 @@ export function MentorsScreen() {
           </View>
         )}
 
+        <View style={styles.matchRow}>
+          <Ionicons name="sparkles-outline" size={14} color="#7653B5" />
+          <Text style={styles.matchScore}>{match.score}% profile match</Text>
+          <Text style={styles.matchReason} numberOfLines={1}>{match.reason}</Text>
+        </View>
+
         {/* Action Buttons */}
         <View style={styles.cardActions}>
+          <TouchableOpacity
+            style={styles.profileBtn}
+            onPress={() => navigation.navigate('MentorProfile', { profile: item })}
+          >
+            <Ionicons name="person-circle-outline" size={16} color={colors.primaryDark} />
+            <Text style={styles.profileBtnText}>View profile</Text>
+          </TouchableOpacity>
+          {canRequestMentor && <>
           <TouchableOpacity
             style={[
               styles.connectBtn,
@@ -278,6 +288,7 @@ export function MentorsScreen() {
             <Ionicons name="help-circle-outline" size={15} color={colors.primary} />
             <Text style={styles.askDirectText}>Ask Question</Text>
           </TouchableOpacity>
+          </>}
 
           {connected && (
             <TouchableOpacity
@@ -298,14 +309,18 @@ export function MentorsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.topBar}>
-        <View>
-          <Text style={styles.pageTitle}>Members & Mentors</Text>
+          <View style={styles.topBarCopy}>
+          <Text style={styles.pageTitle} numberOfLines={2}>Members & Mentors</Text>
           <Text style={styles.pageSub}>
-            Mentor profiles are not connected to a shared directory yet.
+            Discover by skills and campus. Match scores compare shared profile details.
           </Text>
+          <View style={styles.demoNotice}>
+            <Ionicons name="information-circle-outline" size={15} color="#516B85" />
+            <Text style={styles.demoNoticeText}>Profiles marked Demo are fictional examples for this presentation.</Text>
+          </View>
         </View>
       </View>
 
@@ -384,23 +399,29 @@ export function MentorsScreen() {
         </ScrollView>
       </View>
 
+      <TouchableOpacity style={styles.officeHoursBanner} onPress={() => navigation.navigate('OfficeHours')}>
+        <Ionicons name="calendar-outline" size={19} color={colors.primaryDark} />
+        <View style={{ flex: 1, minWidth: 0 }}><Text style={styles.officeHoursTitle}>Mentor office hours</Text><Text style={styles.officeHoursSubtitle}>See available guidance sessions</Text></View>
+        <Ionicons name="arrow-forward" size={16} color={colors.primaryDark} />
+      </TouchableOpacity>
+
       {/* Mentors List */}
       <FlatList
-        data={mentors}
+        data={[...mentors].sort((a, b) => matchDetails(user, b).score - matchDetails(user, a).score)}
         keyExtractor={(item) => item.id}
         renderItem={renderMentorCard}
         contentContainerStyle={styles.listContent}
+        refreshControl={<RefreshControl refreshing={loading && mentors.length > 0} onRefresh={() => { void loadMentors(); }} colors={[colors.primary]} />}
+        ListHeaderComponent={loadError && mentors.length > 0 ? <TouchableOpacity style={styles.errorNotice} onPress={() => { void loadMentors(); }}><Text style={styles.errorText}>{loadError} Tap to retry.</Text></TouchableOpacity> : loading && mentors.length > 0 ? <View style={styles.loadingNotice}><ActivityIndicator color={colors.primary} /><Text style={styles.loadingText}>Updating profiles...</Text></View> : undefined}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          loading ? <View style={styles.emptyContainer}><ActivityIndicator size="large" color={colors.primary} /><Text style={styles.emptySubtitle}>Loading helper and mentor profiles...</Text></View> : loadError ? <View style={styles.emptyContainer}><Ionicons name="cloud-offline-outline" size={42} color={colors.slateMuted} /><Text style={styles.emptyTitle}>Profiles unavailable</Text><Text style={styles.emptySubtitle}>{loadError}</Text><TouchableOpacity style={styles.retryButton} onPress={() => { void loadMentors(); }}><Text style={styles.retryText}>Try again</Text></TouchableOpacity></View> : <View style={styles.emptyContainer}>
             <Ionicons name="people-outline" size={48} color={colors.slateMuted} />
-            <Text style={styles.emptyTitle}>No member profiles available</Text>
-            <Text style={styles.emptySubtitle}>
-              The shared mentor directory will appear when public profiles are connected.
-            </Text>
+            <Text style={styles.emptyTitle}>No profiles found</Text>
+            <Text style={styles.emptySubtitle}>No helper or mentor profiles match this search yet.</Text>
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -417,16 +438,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
   },
+  topBarCopy: { flex: 1, minWidth: 0 },
+  officeHoursBanner: { marginHorizontal: 16, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 9, padding: 11, borderRadius: 12, backgroundColor: '#E4F5EC', borderWidth: 1, borderColor: '#CDEBDD' },
+  officeHoursTitle: { color: colors.primaryDark, fontSize: 11, fontWeight: '800' },
+  officeHoursSubtitle: { color: colors.slateMedium, fontSize: 9.5, marginTop: 2 },
   pageTitle: {
-    fontSize: 20,
+    fontSize: 19,
+    lineHeight: 24,
     fontWeight: '800',
     color: colors.slateDark,
   },
   pageSub: {
     fontSize: 12,
+    lineHeight: 17,
     color: colors.slateMedium,
     marginTop: 2,
   },
+  demoNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 9, padding: 9, borderRadius: 10, backgroundColor: '#EEF3F8' },
+  demoNoticeText: { flex: 1, minWidth: 0, color: '#516B85', fontSize: 10.5, lineHeight: 15 },
   searchSection: {
     paddingHorizontal: 16,
     marginTop: 10,
@@ -527,6 +556,7 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     flex: 1,
+    minWidth: 0,
   },
   safetyButton: {
     width: 34,
@@ -538,8 +568,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    minWidth: 0,
   },
   mentorName: {
+    flexShrink: 1,
+    minWidth: 0,
     fontSize: 15,
     fontWeight: '700',
     color: colors.slateDark,
@@ -563,6 +596,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   institutionText: {
+    flex: 1,
+    minWidth: 0,
     fontSize: 12.5,
     fontWeight: '700',
     color: colors.primaryDark,
@@ -584,6 +619,9 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 14,
   },
+  matchRow: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 8, borderRadius: 9, backgroundColor: '#F4F0FC', marginBottom: 10 },
+  matchScore: { color: '#6540A0', fontSize: 10, fontWeight: '800' },
+  matchReason: { flex: 1, minWidth: 0, color: '#725F90', fontSize: 9 },
   skillChip: {
     backgroundColor: '#F1F5F9',
     paddingHorizontal: 8,
@@ -608,13 +646,18 @@ const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
     paddingTop: 12,
   },
+  profileBtn: { flexGrow: 1, flexBasis: '46%', minWidth: 128, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F0FBF5', borderWidth: 1, borderColor: '#CDEBDD', paddingVertical: 9, borderRadius: 10, gap: 6 },
+  profileBtnText: { fontSize: 12.5, fontWeight: '700', color: colors.primaryDark },
   connectBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '46%',
+    minWidth: 128,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -643,7 +686,9 @@ const styles = StyleSheet.create({
     color: colors.slateMedium,
   },
   askDirectBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '46%',
+    minWidth: 128,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -660,7 +705,9 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
   },
   messageBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '46%',
+    minWidth: 128,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -680,6 +727,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 40,
   },
+  loadingNotice: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 10 },
+  loadingText: { color: colors.slateMedium, fontSize: 12 },
+  errorNotice: { padding: 12, backgroundColor: '#FEF2F2', borderRadius: 10, marginBottom: 10 },
+  errorText: { color: '#B91C1C', fontSize: 12 },
+  retryButton: { marginTop: 12, paddingHorizontal: 16, paddingVertical: 9, backgroundColor: colors.primary, borderRadius: 9 },
+  retryText: { color: '#FFFFFF', fontWeight: '700', fontSize: 12 },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',

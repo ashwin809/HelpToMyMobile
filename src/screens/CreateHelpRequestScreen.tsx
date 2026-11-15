@@ -45,25 +45,25 @@ export function CreateHelpRequestScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [university, setUniversity] = useState(
-    route.params?.targetUniversity || user?.university || 'Anna University, Chennai'
+    route.params?.targetUniversity || user?.university || ''
   );
-  const [department, setDepartment] = useState(user?.department || 'Computer Science');
+  const [department, setDepartment] = useState(user?.department || '');
   const [category, setCategory] = useState<HelpCategory>(
     (route.params?.defaultCategory as HelpCategory) || 'Admissions'
   );
   const [urgency, setUrgency] = useState<'Low' | 'Medium' | 'High'>('Medium');
   const [tagsInput, setTagsInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; description?: string; university?: string }>({});
 
   const handleSubmit = async () => {
-    if (!title.trim()) {
-      Alert.alert('Missing Title', 'Please enter a clear summary title for your question.');
-      return;
-    }
-    if (!description.trim()) {
-      Alert.alert('Missing Description', 'Please explain what guidance or help you need.');
-      return;
-    }
+    const nextErrors = {
+      ...(!title.trim() ? { title: 'Enter a clear summary title for your question.' } : {}),
+      ...(!description.trim() ? { description: 'Explain the guidance or help you need.' } : {}),
+      ...(!university.trim() ? { university: 'Enter the target institution.' } : {}),
+    };
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length) return;
     if (!user) {
       Alert.alert('Sign In Required', 'Please sign in to post questions.');
       navigation.navigate('Login');
@@ -128,8 +128,9 @@ export function CreateHelpRequestScreen() {
             label="What do you need help with? (Title) *"
             placeholder="e.g. Guidance needed for Anna University PG Entrance & Interview"
             value={title}
-            onChangeText={setTitle}
+            onChangeText={(value) => { setTitle(value); setFieldErrors((current) => ({ ...current, title: undefined })); }}
             required
+            error={fieldErrors.title}
           />
 
           {/* Category Picker */}
@@ -173,8 +174,9 @@ export function CreateHelpRequestScreen() {
           <Input
             placeholder="Or type custom University / College name"
             value={university}
-            onChangeText={setUniversity}
+            onChangeText={(value) => { setUniversity(value); setFieldErrors((current) => ({ ...current, university: undefined })); }}
             leftIcon="business-outline"
+            error={fieldErrors.university}
           />
 
           <Input
@@ -224,8 +226,9 @@ export function CreateHelpRequestScreen() {
             multiline
             numberOfLines={5}
             value={description}
-            onChangeText={setDescription}
+            onChangeText={(value) => { setDescription(value); setFieldErrors((current) => ({ ...current, description: undefined })); }}
             required
+            error={fieldErrors.description}
           />
 
           <Input

@@ -10,6 +10,7 @@ import {
   Image,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -23,6 +24,7 @@ import { colors, spacing, shadows } from '../theme';
 import { Badge } from '../components/common';
 import { reportBlockService } from '../services/reportBlockService';
 import { showUserSafetyActions } from '../utils/userSafetyActions';
+import { hasAnyRole, LEARNER_ROLES } from '../utils/rolePermissions';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
@@ -46,6 +48,7 @@ const UNIVERSITIES = [
 export function CommunityFeedScreen() {
   const navigation = useNavigation<Navigation>();
   const { user } = useAuth();
+  const canAskCommunity = hasAnyRole(user, LEARNER_ROLES);
 
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [blockedUserIds, setBlockedUserIds] = useState<Set<string>>(new Set());
@@ -70,6 +73,7 @@ export function CommunityFeedScreen() {
   }, [user?.id]);
 
   const loadRequests = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await communityService.getHelpRequests({
         category: selectedCategory === 'All' ? undefined : selectedCategory,
@@ -127,7 +131,7 @@ export function CommunityFeedScreen() {
           </View>
           <View style={styles.authorMeta}>
             <View style={styles.nameRow}>
-              <Text style={styles.authorName}>{item.authorName}</Text>
+              <Text style={styles.authorName} numberOfLines={1} ellipsizeMode="tail">{item.authorName}</Text>
               <Badge
                 label={item.authorRole}
                 size="sm"
@@ -168,12 +172,6 @@ export function CommunityFeedScreen() {
             </TouchableOpacity>
           )}
 
-          {isUrgent && (
-            <View style={styles.urgentBadge}>
-              <Ionicons name="flash" size={11} color="#EF4444" />
-              <Text style={styles.urgentText}>Urgent</Text>
-            </View>
-          )}
         </View>
 
         {/* Title */}
@@ -186,9 +184,15 @@ export function CommunityFeedScreen() {
 
         {/* Target University & Category Pills */}
         <View style={styles.tagsRow}>
+          {isUrgent && (
+            <View style={styles.urgentBadge}>
+              <Ionicons name="flash" size={11} color="#B91C1C" />
+              <Text style={styles.urgentText}>Urgent</Text>
+            </View>
+          )}
           <View style={styles.uniTag}>
             <Ionicons name="business-outline" size={12} color={colors.primaryDark} />
-            <Text style={styles.uniTagText}>{item.university}</Text>
+            <Text style={styles.uniTagText} numberOfLines={1}>{item.university}</Text>
           </View>
           <View style={styles.categoryTag}>
             <Text style={styles.categoryTagText}>{item.category}</Text>
@@ -286,13 +290,13 @@ export function CommunityFeedScreen() {
           >
             <Ionicons name="notifications-outline" size={24} color={colors.slateDark} />
           </TouchableOpacity>
-          <TouchableOpacity
+          {canAskCommunity && <TouchableOpacity
             style={styles.askButton}
             onPress={() => navigation.navigate('CreateHelpRequest', {})}
           >
             <Ionicons name="add-circle" size={18} color="#FFFFFF" />
             <Text style={styles.askButtonText}>Ask For Help</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>}
         </View>
       </View>
 
@@ -304,7 +308,7 @@ export function CommunityFeedScreen() {
             Connect with students, mentors, and educators who are ready to help.
           </Text>
           <Text style={styles.previewNote}>
-            Shared questions are available after the Firebase community service is deployed.
+            [DEMO] posts and profiles are fictional presentation samples.
           </Text>
         </View>
         <View style={styles.welcomeMark}>
@@ -408,11 +412,13 @@ export function CommunityFeedScreen() {
       </View>
 
       {/* Help Requests Feed */}
+      {feedError && requests.length > 0 ? <TouchableOpacity style={styles.feedErrorBanner} onPress={handleRefresh}><Text style={styles.feedErrorText}>{feedError} Tap to retry.</Text></TouchableOpacity> : null}
       <FlatList
         data={requests}
         keyExtractor={(item) => item.id}
         renderItem={renderHelpCard}
         contentContainerStyle={styles.feedContent}
+        ListHeaderComponent={loading && requests.length > 0 ? <View style={styles.loadingInline}><ActivityIndicator color={colors.primary} /><Text style={styles.emptySubtitle}>Refreshing questions...</Text></View> : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -421,6 +427,7 @@ export function CommunityFeedScreen() {
           />
         }
         ListEmptyComponent={
+          loading ? <View style={styles.emptyContainer}><ActivityIndicator size="large" color={colors.primary} /><Text style={styles.emptySubtitle}>Loading community questions...</Text></View> :
           <View style={styles.emptyContainer}>
             <Ionicons name="chatbubble-ellipses-outline" size={48} color={colors.slateMuted} />
             <Text style={styles.emptyTitle}>{feedError ? 'Questions unavailable' : 'No questions found'}</Text>
@@ -431,13 +438,15 @@ export function CommunityFeedScreen() {
               <TouchableOpacity style={styles.emptyAskBtn} onPress={handleRefresh}>
                 <Text style={styles.emptyAskBtnText}>Try again</Text>
               </TouchableOpacity>
-            ) : (
+            ) : canAskCommunity ? (
               <TouchableOpacity
                 style={styles.emptyAskBtn}
                 onPress={() => navigation.navigate('CreateHelpRequest', {})}
               >
                 <Text style={styles.emptyAskBtnText}>+ Ask For Guidance</Text>
               </TouchableOpacity>
+            ) : (
+              <Text style={styles.emptySubtitle}>Students and applicants can post questions for faculty and mentors.</Text>
             )}
           </View>
         }
@@ -478,15 +487,15 @@ const styles = StyleSheet.create({
   brandText: {
     flexShrink: 1,
     minWidth: 0,
-    maxWidth: 132,
+    maxWidth: 112,
   },
   logo: {
     width: 36,
     height: 36,
-    marginRight: 10,
+    marginRight: 6,
   },
   brandName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: 0.3,
@@ -509,7 +518,7 @@ const styles = StyleSheet.create({
   },
   askButtonText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   headerRight: {
@@ -519,7 +528,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   headerIconBtn: {
-    width: 30,
+    width: 27,
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
@@ -707,6 +716,7 @@ const styles = StyleSheet.create({
   },
   authorMeta: {
     flex: 1,
+    minWidth: 0,
   },
   safetyButton: {
     width: 32,
@@ -718,8 +728,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    minWidth: 0,
   },
   authorName: {
+    flexShrink: 1,
+    minWidth: 0,
     fontSize: 14,
     fontWeight: '700',
     color: colors.slateDark,
@@ -774,6 +787,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   uniTagText: {
+    maxWidth: 150,
+    flexShrink: 1,
     fontSize: 11,
     color: colors.primaryDark,
     fontWeight: '600',
@@ -866,6 +881,9 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
   },
+  loadingInline: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10 },
+  feedErrorBanner: { marginHorizontal: 16, marginTop: 8, padding: 10, backgroundColor: '#FEF2F2', borderRadius: 9 },
+  feedErrorText: { color: '#B91C1C', fontSize: 12 },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',

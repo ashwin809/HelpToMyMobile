@@ -1,45 +1,23 @@
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  serverTimestamp,
-  setDoc,
-} from 'firebase/firestore';
-import { db } from './firebaseConfig';
+import { apiClient } from '../api/apiClient';
 
-const blockedUsersRef = (userId: string) => collection(db, 'users', userId, 'blockedUsers');
-const blockedUserRef = (userId: string, targetUserId: string) =>
-  doc(blockedUsersRef(userId), encodeURIComponent(targetUserId));
+type BlockedAccount = { id: string; targetUserId: string; targetName: string };
 
 export const reportBlockService = {
-  async getBlockedUsers(userId: string): Promise<{ id: string; targetUserId: string; targetName: string }[]> {
-    const snapshot = await getDocs(blockedUsersRef(userId));
-    return snapshot.docs.map((blocked) => ({
-      id: blocked.id,
-      targetUserId: blocked.data().targetUserId as string,
-      targetName: blocked.data().targetName as string,
-    }));
+  async getBlockedUsers(_userId: string): Promise<BlockedAccount[]> {
+    const { data } = await apiClient.get<{ items: { targetUserId: string; targetName: string }[] }>('/api/v1/blocks');
+    return data.items.map((item) => ({ ...item, id: item.targetUserId }));
   },
 
-  async getBlockedUserIds(userId: string): Promise<Set<string>> {
-    const snapshot = await getDocs(blockedUsersRef(userId));
-    const users = snapshot.docs.map((blocked) => blocked.data().targetUserId as string);
-    return new Set(users.filter(Boolean));
+  async getBlockedUserIds(_userId: string): Promise<Set<string>> {
+    return new Set((await this.getBlockedUsers(_userId)).map((user) => user.targetUserId));
   },
 
-  async blockUser(userId: string, targetUserId: string, targetName: string): Promise<void> {
-    if (!userId || !targetUserId || userId === targetUserId) throw new Error('You cannot block this account.');
-    await setDoc(blockedUserRef(userId, targetUserId), {
-      targetUserId,
-      targetName,
-      createdAt: serverTimestamp(),
-    });
+  async blockUser(_userId: string, targetUserId: string, _targetName: string): Promise<void> {
+    await apiClient.post('/api/v1/blocks', { targetUserId });
   },
 
-  async unblockUser(userId: string, targetUserId: string): Promise<void> {
-    await deleteDoc(blockedUserRef(userId, targetUserId));
+  async unblockUser(_userId: string, targetUserId: string): Promise<void> {
+    await apiClient.delete(`/api/v1/blocks/${encodeURIComponent(targetUserId)}`);
   },
 
   async reportUser(input: {
@@ -50,13 +28,7 @@ export const reportBlockService = {
     contentType?: 'profile' | 'help_request';
     contentId?: string;
   }): Promise<void> {
-    if (!input.reporterId || !input.targetUserId || input.reporterId === input.targetUserId) {
-      throw new Error('You cannot report this account.');
-    }
-    await addDoc(collection(db, 'reports'), {
-      ...input,
-      status: 'open',
-      createdAt: serverTimestamp(),
-    });
+    const { reporterId: _reporterId, targetName: _targetName, ...report } = input;
+    await apiClient.post('/api/v1/reports', report);
   },
 };

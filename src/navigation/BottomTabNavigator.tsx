@@ -5,18 +5,14 @@ import { PublicTabParamList } from './types';
 import { colors } from '../theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  HomeScreen,
   CommunityFeedScreen,
-  ChatListScreen,
+  MyNetworkScreen,
   MentorsScreen,
-  AboutUsScreen,
   ProfileScreen,
 } from '../screens';
 
 const Tab = createBottomTabNavigator<PublicTabParamList>();
-
-function ChatMessagesTab() {
-  return <ChatListScreen isTab />;
-}
 
 export function PublicTabNavigator() {
   const insets = useSafeAreaInsets();
@@ -40,6 +36,11 @@ export function PublicTabNavigator() {
       }}
     >
       <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ title: 'Home', tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} /> }}
+      />
+      <Tab.Screen
         name="Community"
         component={CommunityFeedScreen}
         options={{
@@ -50,13 +51,11 @@ export function PublicTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Chats"
-        component={ChatMessagesTab}
+        name="Network"
+        component={MyNetworkScreen}
         options={{
-          title: 'Messages',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-ellipses-outline" color={color} size={size} />
-          ),
+          title: 'Network',
+          tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" color={color} size={size} />,
         }}
       />
       <Tab.Screen
@@ -66,16 +65,6 @@ export function PublicTabNavigator() {
           title: 'Mentors',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="AboutUs"
-        component={AboutUsScreen}
-        options={{
-          title: 'Our Mission',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="heart-outline" color={color} size={size} />
           ),
         }}
       />

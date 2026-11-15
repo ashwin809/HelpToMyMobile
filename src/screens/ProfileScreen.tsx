@@ -15,9 +15,11 @@ import { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../hooks/useAuth';
 import { getAuthErrorMessage } from '../services/authService';
 import { communityService } from '../services/communityService';
+import { chatService, mentorService } from '../services';
 import { HelpRequest } from '../models';
 import { colors, spacing, shadows } from '../theme';
 import { Badge, Button } from '../components/common';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
@@ -26,22 +28,44 @@ export function ProfileScreen() {
   const { user, logout } = useAuth();
 
   const [myRequests, setMyRequests] = useState<HelpRequest[]>([]);
-
-  const loadUserData = useCallback(async () => {
-    if (!user) return;
-    try {
-      const requests = await communityService.getHelpRequests({ authorId: user.id });
-      setMyRequests(requests);
-
-    } catch (err) {
-      console.warn('Failed to load user profile data:', err);
-    }
-  }, [user]);
+  const [connectedPeople, setConnectedPeople] = useState(0);
+  const [activeConversations, setActiveConversations] = useState(0);
+  const [responsesGiven, setResponsesGiven] = useState(0);
+  const [resolvedInquiriesHelped, setResolvedInquiriesHelped] = useState(0);
+  const [profileDataLoading, setProfileDataLoading] = useState(true);
+  const [profileDataError, setProfileDataError] = useState('');
 
   useFocusEffect(
     useCallback(() => {
-      loadUserData();
-    }, [loadUserData])
+      if (!user) return;
+      let active = true;
+      setProfileDataLoading(true);
+      setProfileDataError('');
+
+      void Promise.all([
+        communityService.getHelpRequests({ authorId: user.id }),
+        mentorService.getConnections(),
+        communityService.getCommunityImpact(),
+      ]).then(([requests, connections, impact]) => {
+        if (!active) return;
+        setMyRequests(requests);
+        setConnectedPeople(connections.filter((connection) => connection.status === 'accepted').length);
+        setResponsesGiven(impact.responsesGiven);
+        setResolvedInquiriesHelped(impact.resolvedInquiriesHelped);
+      }).catch((err) => {
+        console.warn('Failed to load user profile data:', err);
+        if (active) setProfileDataError('Some profile activity could not be loaded. Pull down to try again.');
+      }).finally(() => { if (active) setProfileDataLoading(false); });
+
+      const unsubscribe = chatService.subscribeToUserThreads(user.id, (threads) => {
+        if (active) setActiveConversations(threads.filter((thread) => Boolean(thread.lastMessage)).length);
+      }, (err) => console.warn('Failed to load profile conversations:', err));
+
+      return () => {
+        active = false;
+        unsubscribe();
+      };
+    }, [user])
   );
 
   const handleSignOut = () => {
@@ -76,10 +100,29 @@ export function ProfileScreen() {
     );
   }
 
+  const selectedRoles = user.userTypes?.length ? user.userTypes : [user.userType];
+  const isLearner = selectedRoles.some((role) => role === 'Student' || role === 'Applicant');
+  const isMentor = selectedRoles.some((role) => role === 'Professor' || role === 'Alumni');
+  const impactItems = [
+    { label: 'Connections', value: connectedPeople, detail: 'People in your network', icon: 'people-outline' as const, tone: '#147D64' },
+    { label: 'Conversations', value: activeConversations, detail: 'Chats started', icon: 'chatbubbles-outline' as const, tone: '#2874A6' },
+    ...(isLearner ? [
+      { label: 'Questions asked', value: myRequests.length, detail: 'Guidance requests posted', icon: 'help-circle-outline' as const, tone: '#7653B5' },
+      { label: 'Questions resolved', value: myRequests.filter((request) => request.status === 'resolved').length, detail: 'Marked resolved by you', icon: 'checkmark-done-outline' as const, tone: '#B9770E' },
+    ] : []),
+    ...(isMentor ? [
+      { label: 'Answers shared', value: responsesGiven, detail: 'Community replies posted', icon: 'chatbox-ellipses-outline' as const, tone: '#7653B5' },
+      { label: 'Resolved inquiries helped', value: resolvedInquiriesHelped, detail: 'Your replies on resolved questions', icon: 'school-outline' as const, tone: '#B9770E' },
+    ] : []),
+  ];
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+    <ScrollView contentContainerStyle={styles.content}>
       {/* Profile Card */}
       <View style={styles.profileCard}>
+        {profileDataLoading ? <Text style={styles.profileStatus}>Updating your profile activity…</Text> : null}
+        {profileDataError ? <Text accessibilityRole="alert" style={styles.profileError}>{profileDataError}</Text> : null}
         <View style={styles.headerRow}>
           <Image
             source={{
@@ -93,7 +136,7 @@ export function ProfileScreen() {
           />
           <View style={styles.headerInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.userName}>
+              <Text style={styles.userName} numberOfLines={2} ellipsizeMode="tail">
                 {user.firstName} {user.lastName}
               </Text>
               {user.isVerified && (
@@ -104,20 +147,8 @@ export function ProfileScreen() {
               {user.designation || user.userType}
             </Text>
             <View style={styles.badgeRow}>
-              <Badge
-                label={user.userType}
-                size="sm"
-                variant={
-                  user.userType === 'Professor'
-                    ? 'volunteer'
-                    : user.userType === 'Student'
-                    ? 'sponsor'
-                    : user.userType === 'Alumni'
-                    ? 'applicant'
-                    : 'primary'
-                }
-              />
-              <Text style={styles.emailText}>{user.email}</Text>
+              {selectedRoles.map((role) => <Badge key={role} label={role} size="sm" variant="primary" />)}
+              <Text style={styles.emailText} numberOfLines={1} ellipsizeMode="middle">{user.email}</Text>
             </View>
           </View>
         </View>
@@ -125,7 +156,7 @@ export function ProfileScreen() {
         {/* Institution details */}
         <View style={styles.uniRow}>
           <Ionicons name="business" size={16} color={colors.primaryDark} />
-          <Text style={styles.uniText}>{user.university}</Text>
+          <Text style={styles.uniText} numberOfLines={2} ellipsizeMode="tail">{user.university || 'Institution not set'}</Text>
         </View>
         {user.department ? (
           <Text style={styles.deptText}>Department: {user.department}</Text>
@@ -135,9 +166,9 @@ export function ProfileScreen() {
         {(user.city || user.country || user.postCode) ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 6 }}>
             <Ionicons name="location" size={15} color={colors.primary} />
-            <Text style={{ fontSize: 13, color: colors.slateDark, fontWeight: '500' }}>
+            <Text numberOfLines={2} style={{ flex: 1, minWidth: 0, fontSize: 13, color: colors.slateDark, fontWeight: '500' }}>
               {[user.city, user.state, user.country].filter(Boolean).join(', ')}
-              {user.postCode ? ` â€¢ PIN: ${user.postCode}` : ''}
+              {user.postCode ? ` · PIN: ${user.postCode}` : ''}
             </Text>
           </View>
         ) : null}
@@ -164,16 +195,28 @@ export function ProfileScreen() {
           </View>
         )}
 
-        {/* Contribution snapshot */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statCol}>
-            <Text style={styles.statNum}>{myRequests.length}</Text>
-            <Text style={styles.statLabel}>Recent Questions</Text>
+        {/* Role-specific impact from the signed-in user's activity */}
+        <View style={styles.impactSection}>
+          <View style={styles.impactHeader}>
+            <View style={styles.impactHeadingWrap}>
+              <Text style={styles.impactHeading}>Your impact</Text>
+              <Text style={styles.impactSubheading}>{isLearner ? 'Your learning journey' : 'Your contribution to learners'}</Text>
+            </View>
+            <View style={styles.rolePill}><Text style={styles.rolePillText}>{selectedRoles.join(' · ')}</Text></View>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCol}>
-            <Text style={styles.statNum}>{user.skills?.length || 0}</Text>
-            <Text style={styles.statLabel}>Guidance Topics</Text>
+          <View style={styles.statsGrid}>
+            {impactItems.map((item) => (
+              <View key={item.label} style={styles.impactCard}>
+                <View style={styles.impactCardTop}>
+                  <View style={[styles.impactIconWrap, { backgroundColor: `${item.tone}14` }]}>
+                    <Ionicons name={item.icon} size={17} color={item.tone} />
+                  </View>
+                  <Text style={styles.statNum}>{item.value}</Text>
+                </View>
+                <Text style={styles.statLabel} numberOfLines={2}>{item.label}</Text>
+                <Text style={styles.statDetail} numberOfLines={2}>{item.detail}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
@@ -240,6 +283,7 @@ export function ProfileScreen() {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -278,6 +322,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     ...shadows.sm,
   },
+  profileStatus: { color: colors.slateMedium, fontSize: 11, marginBottom: 10 },
+  profileError: { color: '#B91C1C', backgroundColor: '#FEF2F2', borderRadius: 9, padding: 10, fontSize: 11, lineHeight: 16, marginBottom: 10 },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -293,6 +339,9 @@ const styles = StyleSheet.create({
   },
   headerInfo: {
     flex: 1,
+    flexGrow: 1,
+    width: 0,
+    minWidth: 0,
   },
   nameRow: {
     flexDirection: 'row',
@@ -300,7 +349,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   userName: {
-    fontSize: 18,
+    flexShrink: 1,
+    minWidth: 0,
+    fontSize: 17,
+    lineHeight: 21,
     fontWeight: '800',
     color: colors.slateDark,
   },
@@ -317,6 +369,8 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   emailText: {
+    flexShrink: 1,
+    minWidth: 0,
     fontSize: 11.5,
     color: colors.slateLight,
   },
@@ -327,6 +381,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   uniText: {
+    flex: 1,
+    minWidth: 0,
     fontSize: 13.5,
     fontWeight: '700',
     color: colors.primaryDark,
@@ -387,32 +443,45 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 14,
-    paddingVertical: 14,
-    marginTop: 16,
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'space-between',
+  },
+  impactSection: { marginTop: 18, gap: 12 },
+  impactHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  impactHeadingWrap: { flex: 1, minWidth: 0 },
+  impactHeading: { fontSize: 16, fontWeight: '800', color: colors.slateDark },
+  impactSubheading: { fontSize: 11, color: colors.slateMedium, marginTop: 2 },
+  rolePill: { paddingHorizontal: 9, paddingVertical: 5, borderRadius: 20, backgroundColor: '#E7F4EF' },
+  rolePillText: { fontSize: 9, letterSpacing: 0.7, fontWeight: '800', color: colors.primaryDark },
+  impactCard: {
+    width: '48%',
+    minHeight: 104,
+    backgroundColor: '#FBFCFE',
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E5EBF2',
+    padding: 11,
+    justifyContent: 'space-between',
   },
-  statCol: {
-    alignItems: 'center',
-  },
+  impactCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  impactIconWrap: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   statNum: {
-    fontSize: 18,
+    fontSize: 23,
     fontWeight: '800',
     color: colors.slateDark,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: colors.slateDark,
+    marginTop: 8,
+  },
+  statDetail: {
+    fontSize: 9.5,
+    lineHeight: 13,
     color: colors.slateMedium,
     marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: '#E2E8F0',
   },
   profileActions: {
     flexDirection: 'row',

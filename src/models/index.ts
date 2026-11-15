@@ -3,3 +3,4 @@ export * from './ContactMessage';
 export * from './HelpRequest';
 export * from './Chat';
 export * from './Notification';
+export * from './GrowthFeatures';
