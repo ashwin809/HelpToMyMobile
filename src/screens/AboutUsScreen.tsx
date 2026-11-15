@@ -16,31 +16,31 @@ const LEADERS = [
     name: 'Pranav Kalyan',
     title: 'Founder & Student Technologist',
     bio: 'Youngest Microsoft Certified Technology Specialist, passionate about leveraging technology to democratize educational access.',
-    image: require('../../downloaded_assets/pranav.png'),
+    image: require('../../assets/images/pranav.png'),
   },
   {
     name: 'Senthil Krishnaswamy',
     title: 'Co-Founder & Community Lead',
     bio: 'Dedicated to building transparent bridges between donors, educational institutions, and underprivileged aspirants.',
-    image: require('../../downloaded_assets/senthil.png'),
+    image: require('../../assets/images/senthil.png'),
   },
   {
     name: 'Sathya Ramaswamy',
     title: 'Advisory Board Member',
     bio: 'Global technology leader mentoring students on career opportunities, higher education, and scholarship readiness.',
-    image: require('../../downloaded_assets/sathya.png'),
+    image: require('../../assets/images/sathya.png'),
   },
   {
     name: 'Manivannan Arumugam',
     title: 'Technology & Architecture',
     bio: 'Software engineer guiding community platform architecture and non-profit digital transformation.',
-    image: require('../../downloaded_assets/mani.png'),
+    image: require('../../assets/images/mani.png'),
   },
   {
     name: 'Kalyana Kumar Mohan',
     title: 'Operations & Outreach',
     bio: 'Driving field verification, student welfare initiatives, and volunteer coordination across regions.',
-    image: require('../../downloaded_assets/kalyan.png'),
+    image: require('../../assets/images/kalyan.png'),
   },
 ];
 
@@ -50,7 +50,7 @@ export function AboutUsScreen() {
       {/* Hero Banner */}
       <View style={styles.heroCard}>
         <Image
-          source={require('../../downloaded_assets/slide_4.png')}
+          source={require('../../assets/images/slide_4.png')}
           style={styles.heroImage}
           resizeMode="cover"
         />

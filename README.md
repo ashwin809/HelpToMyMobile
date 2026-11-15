@@ -24,14 +24,29 @@ The local PostgreSQL schema is initialized and the database runs in a Docker vol
 
 ## Run the API locally
 
-1. Install Node.js 22 or later and Docker Desktop (or install PostgreSQL yourself).
-2. Start the local PostgreSQL container with `npm run db:up`. It creates the `helptoyou` database and keeps its data in a Docker volume. The default password is for local development only; set `POSTGRES_PASSWORD` in your shell before starting if you want a different one.
+1. Use Node.js 24 LTS (`.nvmrc` selects 24) and Docker Desktop (or install PostgreSQL yourself). The Expo/React Native toolchain requires Node `^22.13.0 || ^24.3.0 || >=26.0.0`; older Node 20 or early Node 22 releases are unsupported.
+2. Run `npm run setup` from the project root. This installs both the frontend and API from their committed lockfiles. A Git pull updates source and dependency lists; it does not install packages on your computer.
 3. Copy `server/.env.example` to `server/.env`; make `DATABASE_URL` use the same database credentials, set a random `JWT_SECRET` with at least 32 characters, and set `LLM_API_KEY` plus `LLM_MODEL` for the academic assistant. Keep the provider key in `server/.env`, never in the mobile app's `.env`.
-4. Install API dependencies with `npm --prefix server ci`.
+4. Start the local PostgreSQL container with `npm run db:up`. It creates the `helptoyou` database and keeps its data in a Docker volume. The default password is for local development only; set `POSTGRES_PASSWORD` in your shell before starting if you want a different one.
 5. Create the schema with `npm run db:migrate`.
 6. Start the API with `npm run api:dev`.
 7. Copy `.env.example` to `.env` and set `EXPO_PUBLIC_API_BASE_URL`. Use `http://localhost:4000` for web or the iOS simulator, `http://10.0.2.2:4000` for the Android emulator, or your computer's LAN IP for a physical device.
 8. Start the app with `npm run web` or `npm run start:native`.
+
+### Updating an existing checkout
+
+Stop Expo and the API before reinstalling packages. On Windows PowerShell use `npm.cmd`/`npx.cmd` if script execution policy blocks `npm`/`npx`.
+
+```sh
+git pull origin main
+npm run setup
+npm run deps:check
+npm run db:migrate
+```
+
+Keep your existing `.env` files. On a fresh checkout, create them from the example files before migrating or starting the API. Each developer needs their own local PostgreSQL database and server configuration; Git does not copy another developer's database or credentials.
+
+Start the API with `npm run api:dev` and, in another terminal, start Expo with `npm run start:native:clear` (phone) or `npm run web -- --clear` (browser). If Expo Go reports an incompatible SDK, use an Expo Go version or development build that supports this project's Expo SDK 58. Do not mix packages from a different Expo SDK or bypass dependency conflicts with `--force` or `--legacy-peer-deps`.
 
 For a native Android build from a fresh checkout, generate a local debug keystore first (requires the JDK):
 
@@ -58,15 +73,19 @@ Reset links expire after 30 minutes, can be used once, and are stored in the dat
 Calendar linking uses server-side Google OAuth. The app requests only `https://www.googleapis.com/auth/calendar.events`; refresh tokens are encrypted in PostgreSQL and never returned to the mobile client. A user connects their Google account from Mentor office hours, then explicitly adds each accepted appointment. Disconnecting removes the stored token and requests token revocation.
 
 1. In Google Cloud Console, enable the Google Calendar API and create a Web application OAuth client.
-2. Add the exact value of `GOOGLE_OAUTH_REDIRECT_URI` as an authorized redirect URI in that OAuth client. It must point to the public HTTPS Node API at `/api/v1/calendar/google/callback`.
+2. Add the exact value of `GOOGLE_OAUTH_REDIRECT_URI` as an authorized redirect URI in that OAuth client. For web testing on the computer running the API, use `http://localhost:4000/api/v1/calendar/google/callback`. For production or a browser on another device, use a reachable HTTPS API address ending in `/api/v1/calendar/google/callback`.
 3. Set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`, and a stable 32-byte hex `GOOGLE_TOKEN_ENCRYPTION_KEY` in `server/.env`. Generate the encryption key with `openssl rand -hex 32`; keep it backed up and secret, because changing it prevents decrypting existing Calendar refresh tokens.
 4. Run `npm run db:migrate` and restart the API.
 
-For local-device development, the OAuth callback still needs a publicly reachable HTTPS address that forwards to the same API instance and database. The Metro API proxy alone does not expose the OAuth callback to Google. Configure the OAuth consent screen and authorized test users in Google Cloud Console as required by your deployment.
+For web testing on the same computer, localhost callbacks keep the API local and do not need a tunnel. The callback URI in `server/.env` and Google Cloud Console must match exactly; restart the API after editing its environment. In the Google sign-in page, approve Calendar access and return to the app; the connection status refreshes automatically. If the browser blocks the sign-in tab, the app shows a message to allow pop-ups.
+
+For phone testing, localhost points to the phone. Use a reachable HTTPS callback that forwards to the same API instance and database. Temporary tunnel URLs stop working when the tunnel closes and change when it is recreated. The Metro API proxy alone does not expose the OAuth callback to Google. Configure the OAuth consent screen and authorized test users in Google Cloud Console as required by your deployment.
 
 ## Checks
 
 - App types: `npm run ts:check`
+- Expo dependency compatibility: `npm run deps:check`
+- Calendar sign-in regressions (Node 24): `node --test scripts/calendar-authorization.test.mjs`
 - API syntax: `node --check server/src/index.js`
 - Database schema: `schema.sql`
 - Non-functional requirement baseline: [NFR.md](NFR.md)

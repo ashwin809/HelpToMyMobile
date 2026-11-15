@@ -1,64 +1,10 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
-const net = require('net');
 const http = require('http');
-const { spawn } = require('child_process');
 
-// Auto-start HelpToYou backend API server on port 4000 if not already running
-let serverStarted = false;
-function ensureApiServer() {
-  if (serverStarted) return;
-  const socket = new net.Socket();
-  socket.setTimeout(400);
-
-  const startServer = () => {
-    if (serverStarted) return;
-    serverStarted = true;
-    try {
-      const serverDir = path.resolve(__dirname, 'server');
-      const child = spawn(process.execPath, [path.resolve(serverDir, 'src/index.js')], {
-        cwd: serverDir,
-        stdio: 'inherit',
-        env: process.env,
-        detached: false,
-      });
-
-      child.on('error', (err) => {
-        console.warn('[API Server] Could not auto-start:', err.message);
-      });
-
-      const cleanup = () => {
-        try {
-          if (!child.killed) child.kill();
-        } catch {}
-      };
-      process.on('exit', cleanup);
-      process.on('SIGINT', cleanup);
-      process.on('SIGTERM', cleanup);
-    } catch (err) {
-      console.warn('[API Server] Auto-start error:', err);
-    }
-  };
-
-  socket.on('connect', () => {
-    socket.destroy();
-  });
-
-  socket.on('error', () => {
-    socket.destroy();
-    startServer();
-  });
-
-  socket.on('timeout', () => {
-    socket.destroy();
-    startServer();
-  });
-
-  socket.connect(4000, '127.0.0.1');
-}
-
-ensureApiServer();
+// Start the API separately with npm run api:dev. Loading Metro configuration
+// (including during exports) must not launch a backend without its local env.
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);

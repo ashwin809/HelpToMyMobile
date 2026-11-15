@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Linking, Platform, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import axios from 'axios';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,9 +13,15 @@ import { hasAnyRole, LEARNER_ROLES, MENTOR_ROLES } from '../utils/rolePermission
 import { CirclePost, HelpRequest, LearningGoal, OfficeHour, Opportunity, StudyCircle, StudyResource } from '../models';
 import { RootStackParamList } from '../navigation/types';
 import { colors } from '../theme';
+import { openCalendarAuthorization } from '../utils/openCalendarAuthorization';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 const palette = { ink: colors.slateDark, muted: colors.slateMedium, green: colors.primaryDark, border: '#E2EAE6', bg: '#F5F8F7' };
+
+function calendarErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error) && typeof error.response?.data?.error === 'string') return error.response.data.error;
+  return error instanceof Error ? error.message : 'Could not connect to Google Calendar. Please try again.';
+}
 
 function Shell({ children, refreshing, onRefresh }: { children: React.ReactNode; refreshing?: boolean; onRefresh?: () => void }) {
   return <SafeAreaView style={s.safe} edges={['top']}><ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" refreshControl={onRefresh ? <RefreshControl refreshing={Boolean(refreshing)} onRefresh={onRefresh} colors={[colors.primary]} /> : undefined}>{children}</ScrollView></SafeAreaView>;
@@ -127,6 +134,8 @@ export function OfficeHoursScreen() {
   const [loading, setLoading] = useState(true);
   const [calendarStatus, setCalendarStatus] = useState<GoogleCalendarStatus>({ configured: false, connected: false });
   const [calendarBusy, setCalendarBusy] = useState(false);
+  const [calendarMessage, setCalendarMessage] = useState('');
+  const [calendarPending, setCalendarPending] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [startsAt, setStartsAt] = useState('');
@@ -142,25 +151,84 @@ export function OfficeHoursScreen() {
     finally { setLoading(false); }
   }, []);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    let checking = false;
+    const checkConnection = async () => {
+      if (checking) return;
+      checking = true;
+      try {
+        const status = await googleCalendarService.getStatus();
+        if (!active) return;
+        setCalendarStatus(status);
+        if (status.connected) {
+          setCalendarPending(false);
+          setCalendarMessage('Google Calendar is connected. You can add confirmed appointments below.');
+        }
+      } catch (error) {
+        if (active && calendarPending) setCalendarMessage(calendarErrorMessage(error));
+      } finally { checking = false; }
+    };
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void checkConnection();
+    });
+    const onWindowFocus = () => { void checkConnection(); };
+    if (Platform.OS === 'web') window.addEventListener('focus', onWindowFocus);
+    if (calendarPending) void checkConnection();
+    const timer = calendarPending ? setInterval(() => {
+      if (AppState.currentState === 'active') void checkConnection();
+    }, 5000) : undefined;
+    const expiry = calendarPending ? setTimeout(() => {
+      if (!active) return;
+      setCalendarPending(false);
+      setCalendarMessage('Google sign-in timed out. Tap Check connection, or connect again to retry.');
+    }, 10 * 60 * 1000) : undefined;
+    return () => {
+      active = false;
+      subscription?.remove();
+      if (Platform.OS === 'web') window.removeEventListener('focus', onWindowFocus);
+      clearInterval(timer);
+      clearTimeout(expiry);
+    };
+  }, [calendarPending]));
   const connectCalendar = async () => {
     setCalendarBusy(true);
+    setCalendarMessage('Opening Google sign-in...');
     try {
-      const authorizationUrl = await googleCalendarService.startConnection();
-      await Linking.openURL(authorizationUrl);
-      Alert.alert('Finish Google setup', 'Approve HelpToYou in the browser, return to this screen, then tap Check connection.');
-    } catch (error) { Alert.alert('Could not connect Google Calendar', error instanceof Error ? error.message : 'Try again.'); }
+      let alreadyConnected = false;
+      await openCalendarAuthorization(async () => {
+        const status = await googleCalendarService.getStatus();
+        setCalendarStatus(status);
+        if (status.connected) {
+          alreadyConnected = true;
+          setCalendarPending(false);
+          setCalendarMessage('Google Calendar is already connected. You can add confirmed appointments below.');
+          return null;
+        }
+        return googleCalendarService.startConnection();
+      }, (url) => Linking.openURL(url), Platform.OS === 'web' ? window : undefined);
+      if (!alreadyConnected) {
+        setCalendarPending(true);
+        setCalendarMessage('Approve Calendar access in the Google sign-in page, then return here. Your connection will update automatically.');
+      }
+    } catch (error) { setCalendarPending(false); setCalendarMessage(calendarErrorMessage(error)); }
     finally { setCalendarBusy(false); }
   };
   const refreshCalendarStatus = async () => {
     setCalendarBusy(true);
-    try { setCalendarStatus(await googleCalendarService.getStatus()); }
-    catch (error) { Alert.alert('Could not check Google Calendar', error instanceof Error ? error.message : 'Try again.'); }
+    try {
+      const status = await googleCalendarService.getStatus();
+      setCalendarStatus(status);
+      if (status.connected) setCalendarPending(false);
+      setCalendarMessage(status.connected ? 'Google Calendar is connected.' : 'Google Calendar is not connected yet. Finish Google sign-in, or tap Connect Google Calendar to retry.');
+    }
+    catch (error) { setCalendarMessage(calendarErrorMessage(error)); }
     finally { setCalendarBusy(false); }
   };
   const disconnectCalendar = async () => {
     setCalendarBusy(true);
-    try { await googleCalendarService.disconnect(); setCalendarStatus((current) => ({ ...current, connected: false })); Alert.alert('Calendar disconnected', 'HelpToYou has removed the saved Google authorization.'); }
-    catch (error) { Alert.alert('Could not disconnect Google Calendar', error instanceof Error ? error.message : 'Try again.'); }
+    try { await googleCalendarService.disconnect(); setCalendarPending(false); setCalendarStatus((current) => ({ ...current, connected: false })); setCalendarMessage('Google Calendar disconnected.'); }
+    catch (error) { setCalendarMessage(calendarErrorMessage(error)); }
     finally { setCalendarBusy(false); }
   };
   const addToCalendar = async (item: OfficeHour) => {
@@ -190,6 +258,8 @@ export function OfficeHoursScreen() {
   };
   return <Shell refreshing={loading} onRefresh={() => void load()}><PageTitle eyebrow="GUIDANCE SESSIONS" title="Mentor office hours" subtitle="Book a short, focused conversation or offer time to support students." />
     {calendarStatus.configured ? <View style={s.card}><Text style={s.cardTitle}>Google Calendar</Text><Text style={s.helper}>{calendarStatus.connected ? 'Connected. Confirmed appointments can be added to your primary calendar. HelpToYou does not check availability or send invitations.' : 'Connect your Google account to add confirmed appointments to your calendar.'}</Text><View style={s.cardTop}><View style={{ flex: 1 }}><PrimaryButton title={calendarBusy ? 'Please wait…' : calendarStatus.connected ? 'Check connection' : 'Connect Google Calendar'} onPress={() => void (calendarStatus.connected ? refreshCalendarStatus() : connectCalendar())} disabled={calendarBusy} /></View>{calendarStatus.connected && <View style={{ flex: 1 }}><PrimaryButton title="Disconnect" onPress={() => void disconnectCalendar()} disabled={calendarBusy} /></View>}</View></View> : <View style={s.card}><Text style={s.cardTitle}>Google Calendar</Text><Text style={s.helper}>Calendar account sync is not configured on the API yet. You can still create a prefilled Calendar event for a confirmed appointment.</Text></View>}
+    {calendarMessage ? <View style={s.card}><Text accessibilityRole="text" accessibilityLiveRegion="polite" style={s.helper}>{calendarMessage}</Text></View> : null}
+    {calendarStatus.configured && !calendarStatus.connected && <PrimaryButton title={calendarBusy ? 'Checking...' : 'Check connection'} onPress={() => void refreshCalendarStatus()} disabled={calendarBusy} />}
     {canCoordinateAppointments && <PrimaryButton title={showForm ? 'Close form' : 'Offer an office hour'} onPress={() => setShowForm((value) => !value)} />}
     {canCoordinateAppointments && showForm && <View style={s.card}><Text style={s.helper}>Times use your device's local timezone. Example: 2026-10-27 14:30</Text><Field value={title} onChangeText={setTitle} placeholder="Session topic" /><Field value={startsAt} onChangeText={setStartsAt} placeholder="Start date and time" /><Field value={endsAt} onChangeText={setEndsAt} placeholder="End date and time" /><Field value={meetingUrl} onChangeText={setMeetingUrl} placeholder="Optional meeting link" keyboardType="url" /><PrimaryButton title="Publish time" onPress={() => void create()} /></View>}
     {loading && !items.length ? <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} /> : items.map((item) => <View key={item.id} style={s.card}><Text style={s.tag}>{item.isDemo ? 'DEMO SAMPLE SESSION' : 'MENTOR OFFICE HOUR'}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.cardBody}>{item.isMine ? `${user?.firstName} ${user?.lastName} - Your session` : item.firstName ? `${item.firstName} ${item.lastName} - ${item.designation || item.userType}` : 'Community mentor'}</Text><Text style={s.meta}>{new Date(item.startsAt).toLocaleString()} - {new Date(item.endsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>{item.isMine && item.bookingStatus === 'requested' ? <><Text style={s.status}>Request from {item.bookerFirstName} {item.bookerLastName}</Text>{item.bookingNote ? <Text style={s.cardBody}>{item.bookingNote}</Text> : null}{canCoordinateAppointments && <View style={s.cardTop}><View style={{ flex: 1 }}><PrimaryButton title="Accept" onPress={() => void respondToBooking(item, 'accepted')} /></View><View style={{ flex: 1 }}><PrimaryButton title="Decline" onPress={() => void respondToBooking(item, 'declined')} /></View></View>}</> : item.bookingStatus ? <><Text style={s.status}>{item.bookingStatus === 'requested' ? 'Request sent' : `Booking: ${item.bookingStatus}`}</Text>{!item.isMine && (item.bookingStatus === 'requested' || item.bookingStatus === 'accepted') ? <PrimaryButton title="Cancel appointment" onPress={() => void respondToBooking(item, 'cancelled')} /> : null}</> : item.isBooked ? <Text style={s.status}>This time has been requested</Text> : !item.isMine && canRequestAppointments ? item.canRequest === false ? <Text style={s.helper}>Connect with this mentor before requesting an office hour.</Text> : <PrimaryButton title="Request this time" onPress={() => void book(item)} /> : null}{item.bookingStatus === 'accepted' && item.bookingId && <PrimaryButton title={item.googleEventUrl ? 'Open Google Calendar event' : calendarStatus.connected ? 'Add to Google Calendar' : 'Create in Google Calendar'} onPress={() => item.googleEventUrl ? void Linking.openURL(item.googleEventUrl) : calendarStatus.connected ? void addToCalendar(item) : void openGoogleCalendarDraft(item).catch((error) => Alert.alert('Could not open Google Calendar', error instanceof Error ? error.message : 'Try again.'))} disabled={calendarBusy} />}</View>)}

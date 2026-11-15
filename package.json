@@ -2,7 +2,12 @@
   "name": "helptoyou",
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
+  "engines": {
+    "node": "^22.13.0 || ^24.3.0 || >=26.0.0"
+  },
   "scripts": {
+    "setup": "npm ci && npm --prefix server ci",
+    "deps:check": "expo install --check",
     "start": "expo start --web",
     "start:native": "expo start",
     "start:native:clear": "expo start --clear",
@@ -27,6 +32,8 @@
     "axios": "^1.7.9",
     "expo": "~58.0.19",
     "expo-asset": "~58.0.18",
+    "expo-constants": "~58.0.13",
+    "expo-font": "~58.0.10",
     "expo-image-picker": "~58.0.10",
     "expo-linking": "~58.0.14",
     "expo-notifications": "~58.1.6",
@@ -35,6 +42,7 @@
     "fast-glob": "^3.3.3",
     "find-up": "^8.0.0",
     "fs-extra": "^11.4.1",
+    "@ungap/structured-clone": "^1.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.0",

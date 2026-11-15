@@ -290,7 +290,8 @@ export async function addBookingToGoogleCalendar(req, res) {
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined);
     if (error.name === 'AbortError' || error.name === 'TimeoutError') return res.status(504).json({ error: 'Google Calendar took too long to respond. Please try again.' });
-    if (error.message?.includes('authorization expired')) return res.status(401).json({ error: error.message });
+    // A Google authorization failure must not invalidate the HelpToYou session.
+    if (error.message?.includes('authorization expired')) return res.status(409).json({ error: error.message });
     console.error('Google Calendar event creation failed:', error.message);
     return res.status(502).json({ error: 'Could not add the appointment to Google Calendar.' });
   } finally {
